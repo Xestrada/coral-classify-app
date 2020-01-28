@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
+import 'dart:io';
 
 void main() => runApp(CoralClassify());
 
@@ -88,9 +91,45 @@ class _CameraPageState extends State<CameraPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
+        child: Icon(Icons.camera_alt),
+        onPressed: () async {
+          try {
+            await _camFuture;
+
+            final String path = join(
+              (await getTemporaryDirectory()).path,
+              '${DateTime.now()}.png'
+            );
+
+            await _camControl.takePicture(path);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DisplayPictureScreen(imagePath: path)
+              ),
+            );
+          } catch (e) {
+            print(e);
+          }
+        },
       ),
     );
   }
+}
 
+class DisplayPictureScreen extends StatelessWidget {
+  final String imagePath;
+
+  const DisplayPictureScreen({Key key, this.imagePath}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Display the Image"),
+      ),
+      body: Image.file(File(imagePath)),
+    );
+  }
 }
