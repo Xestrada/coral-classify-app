@@ -30,8 +30,7 @@ class CameraPage extends StatefulWidget {
 class _CameraPageState extends State<CameraPage> {
 
   CameraController _camControl;
-  bool _camInit = false;
-  String _topText = "";
+  Future<void> _camFuture;
 
   @override
   void initState() {
@@ -42,14 +41,9 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   void _initializeCamera() async {
-    _topText = "Camera is Initializing";
     List<CameraDescription> cameras = await availableCameras();
     _camControl = CameraController(cameras.first, ResolutionPreset.medium);
-    _camControl.initialize().then( (_) {
-      _camInit = true;
-      _topText = "Camera is Initialized";
-      setState(() {});
-    });
+    _camFuture = _camControl.initialize();
   }
 
   @override
@@ -60,7 +54,6 @@ class _CameraPageState extends State<CameraPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Container(
@@ -68,18 +61,29 @@ class _CameraPageState extends State<CameraPage> {
         child: Column(
           children: <Widget>[
             Text(
-              _topText,
+              "Just Text",
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
-            _camInit ? Expanded(
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                child: AspectRatio(
-                  aspectRatio: _camControl.value.aspectRatio,
-                  child: CameraPreview(_camControl)
-                )
-              )
-            ) : Container()
+            FutureBuilder<void>(
+              future: _camFuture,
+              builder: (context, snapshot) {
+                if(snapshot.connectionState == ConnectionState.done) {
+                  return Expanded (
+                      child: OverflowBox(
+                        maxWidth: double.infinity,
+                        child: AspectRatio(
+                            aspectRatio: _camControl.value.aspectRatio,
+                            child: CameraPreview(_camControl)
+                        )
+                      )
+                  );
+                } else {
+                  return Center(
+                    child: CircularProgressIndicator()
+                  );
+                }
+              },
+            )
           ],
         ),
       ),
