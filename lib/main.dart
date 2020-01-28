@@ -29,30 +29,32 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
 
-  CameraController camControl;
-  bool camInit = false;
-  String topText = "";
-
-  void initializeCamera() async {
-    topText = "Camera is Initializing";
-    List<CameraDescription> cameras = await availableCameras();
-    camControl = CameraController(cameras[0], ResolutionPreset.medium);
-    camControl.initialize().then( (onValue) {
-      camInit = true;
-      topText = "Camera is Initialized";
-      setState(() {});
-    });
-  }
+  CameraController _camControl;
+  bool _camInit = false;
+  String _topText = "";
 
   @override
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    _initializeCamera();
+  }
+
+  void _initializeCamera() async {
+    _topText = "Camera is Initializing";
+    List<CameraDescription> cameras = await availableCameras();
+    _camControl = CameraController(cameras.first, ResolutionPreset.medium);
+    _camControl.initialize().then( (_) {
+      _camInit = true;
+      _topText = "Camera is Initialized";
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
+    _camControl?.dispose();
     super.dispose();
   }
 
@@ -66,15 +68,15 @@ class _CameraPageState extends State<CameraPage> {
         child: Column(
           children: <Widget>[
             Text(
-              topText,
+              _topText,
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
-            camInit ? Expanded(
+            _camInit ? Expanded(
               child: OverflowBox(
                 maxWidth: double.infinity,
                 child: AspectRatio(
-                  aspectRatio: camControl.value.aspectRatio,
-                  child: CameraPreview(camControl)
+                  aspectRatio: _camControl.value.aspectRatio,
+                  child: CameraPreview(_camControl)
                 )
               )
             ) : Container()
