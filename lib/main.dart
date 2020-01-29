@@ -5,27 +5,38 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'dart:io';
 
-void main() => runApp(CoralClassify());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final List<CameraDescription> cameras = await availableCameras();
+  runApp(CoralClassify(cameras: cameras));
+}
 
 class CoralClassify extends StatelessWidget {
+
+  final List<CameraDescription> cameras;
+  CoralClassify({this.cameras});
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Coral Classify',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      theme: ThemeData.dark(),
+      home: CameraPage(
+          title: 'Camera Page',
+          cameras: cameras,
       ),
-      home: CameraPage(title: 'Camera Page'),
     );
   }
 }
 
 class CameraPage extends StatefulWidget {
-  CameraPage({Key key, this.title}) : super(key: key);
-
   final String title;
-
+  final List<CameraDescription> cameras;
+  CameraPage({Key key,
+    this.title,
+    @required this.cameras,
+  }) : super(key: key);
   @override
   _CameraPageState createState() => _CameraPageState();
 }
@@ -40,14 +51,10 @@ class _CameraPageState extends State<CameraPage> {
     super.initState();
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-    _initializeCamera();
-  }
-
-  void _initializeCamera() async {
-    List<CameraDescription> cameras = await availableCameras();
-    _camControl = CameraController(cameras.first, ResolutionPreset.medium);
+    _camControl = CameraController(widget.cameras.first, ResolutionPreset.medium);
     _camFuture = _camControl.initialize();
   }
+
 
   @override
   void dispose() {
@@ -63,25 +70,42 @@ class _CameraPageState extends State<CameraPage> {
         color: Colors.black,
         child: Column(
           children: <Widget>[
-            Text(
-              "Just Text",
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
             Expanded(
               child:OverflowBox(
                 maxWidth: double.infinity,
                 child: FutureBuilder<void>(
                   future: _camFuture,
+                  // ignore: missing_return
                   builder: (context, snapshot) {
-                    if(snapshot.connectionState == ConnectionState.done) {
-                      return AspectRatio(
+                    switch(snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                        {
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } break;
+                      case ConnectionState.active:
+                        continue done;
+                      done:
+                      case ConnectionState.done: {
+                        return AspectRatio(
                           aspectRatio: _camControl.value.aspectRatio,
                           child: CameraPreview(_camControl),
-                      );
-                    } else {
-                      return Center(
-                          child: CircularProgressIndicator(),
-                      );
+                        );
+                      } break;
+                      case ConnectionState.none: {
+                        continue def;
+                      }
+                      def:
+                      default: {
+                        return Center(
+                          child: Text(
+                            "Failed ot Initialize Cameras",
+                          ),
+                        );
+                      }
+
+
                     }
                   }
                 ),
@@ -95,7 +119,6 @@ class _CameraPageState extends State<CameraPage> {
         onPressed: () async {
           try {
             await _camFuture;
-
             final String path = join(
               (await getTemporaryDirectory()).path,
               '${DateTime.now()}.png'
