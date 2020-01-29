@@ -67,26 +67,26 @@ class _CameraPageState extends State<CameraPage> {
               "Just Text",
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
-            FutureBuilder<void>(
-              future: _camFuture,
-              builder: (context, snapshot) {
-                if(snapshot.connectionState == ConnectionState.done) {
-                  return Expanded (
-                      child: OverflowBox(
-                        maxWidth: double.infinity,
-                        child: AspectRatio(
-                            aspectRatio: _camControl.value.aspectRatio,
-                            child: CameraPreview(_camControl)
-                        )
-                      )
-                  );
-                } else {
-                  return Center(
-                    child: CircularProgressIndicator()
-                  );
-                }
-              },
-            )
+            Expanded(
+              child:OverflowBox(
+                maxWidth: double.infinity,
+                child: FutureBuilder<void>(
+                  future: _camFuture,
+                  builder: (context, snapshot) {
+                    if(snapshot.connectionState == ConnectionState.done) {
+                      return AspectRatio(
+                          aspectRatio: _camControl.value.aspectRatio,
+                          child: CameraPreview(_camControl),
+                      );
+                    } else {
+                      return Center(
+                          child: CircularProgressIndicator(),
+                      );
+                    }
+                  }
+                ),
+              ),
+            ),
           ],
         ),
       ),
