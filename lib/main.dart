@@ -104,8 +104,6 @@ class _CameraPageState extends State<CameraPage> {
                           ),
                         );
                       }
-
-
                     }
                   }
                 ),
@@ -114,28 +112,36 @@ class _CameraPageState extends State<CameraPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.camera_alt),
-        onPressed: () async {
-          try {
-            await _camFuture;
-            final String path = join(
-              (await getTemporaryDirectory()).path,
-              '${DateTime.now()}.png'
-            );
+      floatingActionButton: Stack(
+        children: <Widget> [
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: FloatingActionButton(
+              heroTag: null,
+              child: Icon(Icons.camera_alt),
+              onPressed: () async {
+                try {
+                  await _camFuture;
+                  final String path = join(
+                      (await getTemporaryDirectory()).path,
+                      '${DateTime.now()}.png'
+                  );
 
-            await _camControl.takePicture(path);
+                  await _camControl.takePicture(path);
 
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => DisplayPictureScreen(imagePath: path)
-              ),
-            );
-          } catch (e) {
-            print(e);
-          }
-        },
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DisplayPictureScreen(imagePath: path)
+                    ),
+                  );
+                } catch (e) {
+                  print(e);
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
