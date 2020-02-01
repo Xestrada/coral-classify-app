@@ -45,21 +45,57 @@ class _CameraPageState extends State<CameraPage> {
 
   CameraController _camControl;
   Future<void> _camFuture;
+  bool _isDetecting;
 
   @override
   void initState() {
     super.initState();
+    _isDetecting = false;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     _camControl = CameraController(widget.cameras.first, ResolutionPreset.medium);
-    _camFuture = _camControl.initialize();
+    _camFuture = _camControl.initialize().then((_) async {
+      await _camControl.startImageStream((CameraImage image) =>
+          _processCameraStream(image)
+      );
+    });
   }
-
 
   @override
   void dispose() {
     _camControl?.dispose();
     super.dispose();
+  }
+
+  void _processCameraStream(CameraImage image) async {
+    if(!_isDetecting) {
+      _isDetecting = true;
+      // Detect Corals
+      _isDetecting = false;
+    }
+  }
+
+  /// Take a picture
+  void _takePicture(BuildContext context) async {
+    try {
+      await _camFuture;
+
+      final String path = join(
+          (await getTemporaryDirectory()).path,
+          '${DateTime.now()}.png'
+      );
+
+      await _camControl.takePicture(path);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Gallery(imagePath: path),
+        ),
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override
@@ -119,26 +155,7 @@ class _CameraPageState extends State<CameraPage> {
             child: FloatingActionButton(
               heroTag: null,
               child: Icon(Icons.camera_alt),
-              onPressed: () async {
-                try {
-                  await _camFuture;
-                  final String path = join(
-                      (await getTemporaryDirectory()).path,
-                      '${DateTime.now()}.png'
-                  );
-
-                  await _camControl.takePicture(path);
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Gallery(imagePath: path),
-                    ),
-                  );
-                } catch (e) {
-                  print(e);
-                }
-              },
+              onPressed: () => _takePicture(context),
             ),
           ),
         ],
