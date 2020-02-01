@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
-import 'dart:io';
+import './Gallery.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -132,7 +132,7 @@ class _CameraPageState extends State<CameraPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => DisplayPictureScreen(imagePath: path)
+                        builder: (context) => Gallery(imagePath: path),
                     ),
                   );
                 } catch (e) {
@@ -143,22 +143,6 @@ class _CameraPageState extends State<CameraPage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class DisplayPictureScreen extends StatelessWidget {
-  final String imagePath;
-
-  const DisplayPictureScreen({Key key, this.imagePath}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Display the Image"),
-      ),
-      body: Image.file(File(imagePath)),
     );
   }
 }
