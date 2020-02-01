@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:tflite/tflite.dart';
 import './Gallery.dart';
+import './ObjectRect.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,7 +63,7 @@ class _CameraPageState extends State<CameraPage> {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
     // Setup Camera Control
-    _camControl = CameraController(widget.cameras.first, ResolutionPreset.medium);
+    _camControl = CameraController(widget.cameras.first, ResolutionPreset.high);
     _camFuture = _camControl.initialize().then((_) async {
       await _camControl.startImageStream((CameraImage image) =>
           _processCameraImage(image)
@@ -89,11 +90,8 @@ class _CameraPageState extends State<CameraPage> {
       imageWidth: image.width,
       imageMean: 127.5,
       imageStd: 127.5,
-      threshold: 0.2,
-    ).then((data) {
-      _isDetecting = false;
-      return data;
-    });
+      threshold: 0.4,
+    );
 
     List<String> possibleCoral = ['dog', 'cat', 'bear', 'teddy bear', 'sheep'];
     Map biggestRect;
@@ -125,6 +123,7 @@ class _CameraPageState extends State<CameraPage> {
       List results = await Future.wait(
         [findCoralFuture, Future.delayed(Duration(milliseconds: 500))]
       );
+      _isDetecting = false;
       setState(() {
         _savedRect = results[0];
       });
