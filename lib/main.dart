@@ -3,11 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import 'package:tflite/tflite.dart';
 import './Gallery.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final List<CameraDescription> cameras = await availableCameras();
+  await Tflite.loadModel(
+    model: "assets/ssd_mobilenet.tflite",
+    labels: "assets/ssd_mobilenet.txt",
+    numThreads: 1,
+  );
   runApp(CoralClassify(cameras: cameras));
 }
 
@@ -45,6 +51,7 @@ class _CameraPageState extends State<CameraPage> {
 
   CameraController _camControl;
   Future<void> _camFuture;
+  Map _savedRect;
   bool _isDetecting;
 
   @override
@@ -53,12 +60,15 @@ class _CameraPageState extends State<CameraPage> {
     _isDetecting = false;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+
+    // Setup Camera Control
     _camControl = CameraController(widget.cameras.first, ResolutionPreset.medium);
     _camFuture = _camControl.initialize().then((_) async {
       await _camControl.startImageStream((CameraImage image) =>
-          _processCameraStream(image)
+          _processCameraImage(image)
       );
     });
+
   }
 
   @override
@@ -67,11 +77,57 @@ class _CameraPageState extends State<CameraPage> {
     super.dispose();
   }
 
-  void _processCameraStream(CameraImage image) async {
+  // Find Corals from a CameraImage
+  Future<Map> _findCorals(CameraImage image) async {
+
+    List resultList = await Tflite.detectObjectOnFrame(
+        bytesList: image.planes.map((plane) {
+          return plane.bytes;
+        }).toList(),
+      model: "SSDMobileNet",
+      imageHeight: image.height,
+      imageWidth: image.width,
+      imageMean: 127.5,
+      imageStd: 127.5,
+      threshold: 0.2,
+    ).then((data) {
+      _isDetecting = false;
+      return data;
+    });
+
+    List<String> possibleCoral = ['dog', 'cat', 'bear', 'teddy bear', 'sheep'];
+    Map biggestRect;
+    double rectSize, rectMax = 0.0;
+
+    if(resultList != null) {
+      for (var item in resultList) {
+        if (possibleCoral.contains(item["detectedClass"])) {
+          Map aRect = item["rect"];
+          rectSize = aRect["w"] * aRect["h"];
+          if (rectSize > rectMax) {
+            rectMax = rectSize;
+            biggestRect = aRect;
+          }
+        }
+      }
+    }
+
+    return biggestRect;
+
+  }
+
+  // Process a CameraImage from the camera
+  void _processCameraImage(CameraImage image) async {
     if(!_isDetecting) {
       _isDetecting = true;
       // Detect Corals
-      _isDetecting = false;
+      Future findCoralFuture = _findCorals(image);
+      List results = await Future.wait(
+        [findCoralFuture, Future.delayed(Duration(milliseconds: 500))]
+      );
+      setState(() {
+        _savedRect = results[0];
+      });
     }
   }
 
