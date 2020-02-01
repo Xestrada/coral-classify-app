@@ -53,6 +53,8 @@ class _CameraPageState extends State<CameraPage> {
   CameraController _camControl;
   Future<void> _camFuture;
   Map _savedRect;
+  String _savedObjectName;
+  double _savedProb;
   bool _isDetecting;
 
   @override
@@ -63,7 +65,7 @@ class _CameraPageState extends State<CameraPage> {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
     // Setup Camera Control
-    _camControl = CameraController(widget.cameras.first, ResolutionPreset.high);
+    _camControl = CameraController(widget.cameras.first, ResolutionPreset.max);
     _camFuture = _camControl.initialize().then((_) async {
       await _camControl.startImageStream((CameraImage image) =>
           _processCameraImage(image)
@@ -79,7 +81,7 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   // Find Corals from a CameraImage
-  Future<Map> _findCorals(CameraImage image) async {
+  Future<List> _findCorals(CameraImage image) async {
 
     List resultList = await Tflite.detectObjectOnFrame(
         bytesList: image.planes.map((plane) {
@@ -93,24 +95,28 @@ class _CameraPageState extends State<CameraPage> {
       threshold: 0.4,
     );
 
-    List<String> possibleCoral = ['dog', 'cat', 'bear', 'teddy bear', 'sheep'];
-    Map biggestRect;
-    double rectSize, rectMax = 0.0;
+    List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
+    Map biggestRect; // Biggest Rect of detected Object
+    double maxProb = 0.0;
+    String name; // Detected Object name
+    double prob; // Confidence in Class
 
     if(resultList != null) {
       for (var item in resultList) {
         if (possibleCoral.contains(item["detectedClass"])) {
           Map aRect = item["rect"];
-          rectSize = aRect["w"] * aRect["h"];
-          if (rectSize > rectMax) {
-            rectMax = rectSize;
+          if (item["confidenceInClass"] > maxProb) {
+            // If bigger rectangle set data that is to be returned
             biggestRect = aRect;
+            name = item["detectedClass"];
+            maxProb = prob = item["confidenceInClass"];
           }
         }
       }
     }
 
-    return biggestRect;
+    // Return Map of Rectangle, name of detected Object, and confidence in Class
+    return [biggestRect, name, prob];
 
   }
 
@@ -125,7 +131,9 @@ class _CameraPageState extends State<CameraPage> {
       );
       _isDetecting = false;
       setState(() {
-        _savedRect = results[0];
+        _savedRect = results[0][0];
+        _savedObjectName = results[0][1];
+        _savedProb = results[0][2];
       });
     }
   }
@@ -162,8 +170,8 @@ class _CameraPageState extends State<CameraPage> {
         child: Column(
           children: <Widget>[
             Expanded(
-              child:OverflowBox(
-                maxWidth: double.infinity,
+              child:AspectRatio(
+                aspectRatio: _camControl.value.aspectRatio,
                 child: FutureBuilder<void>(
                   future: _camFuture,
                   // ignore: missing_return
@@ -179,9 +187,19 @@ class _CameraPageState extends State<CameraPage> {
                         continue done;
                       done:
                       case ConnectionState.done: {
-                        return AspectRatio(
-                          aspectRatio: _camControl.value.aspectRatio,
-                          child: CameraPreview(_camControl),
+                        return Stack (
+                            fit: StackFit.expand,
+                            children: <Widget> [
+                              CameraPreview(_camControl),
+                              CustomPaint(
+                                painter:
+                                  ObjectRect(
+                                      _savedRect,
+                                      _savedObjectName,
+                                      _savedProb
+                                  )
+                              ),
+                            ]
                         );
                       } break;
                       case ConnectionState.none: {
