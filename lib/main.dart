@@ -13,7 +13,7 @@ Future<void> main() async {
   await Tflite.loadModel(
     model: "assets/ssd_mobilenet.tflite",
     labels: "assets/ssd_mobilenet.txt",
-    numThreads: 2,
+    numThreads: 4,
   );
   runApp(CoralClassify(cameras: cameras));
 }
@@ -99,7 +99,8 @@ class _CameraPageState extends State<CameraPage> {
       imageWidth: image.width,
       imageMean: 127.5,
       imageStd: 127.5,
-      threshold: 0.4,
+      threshold: 0.2,
+
     );
 
     List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
@@ -131,9 +132,8 @@ class _CameraPageState extends State<CameraPage> {
     if(!_isDetecting) {
       _isDetecting = true;
       // Detect Corals
-      Future findCoralFuture = _findCorals(image);
       List results = await Future.wait(
-        [findCoralFuture, Future.delayed(Duration(milliseconds: 500))]
+        [_findCorals(image), Future.delayed(Duration(milliseconds: 1100))]
       );
       _isDetecting = false;
       setState(() {
