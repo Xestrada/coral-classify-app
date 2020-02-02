@@ -177,7 +177,8 @@ class _CameraPageState extends State<CameraPage> {
           children: <Widget>[
             Expanded(
               child:AspectRatio(
-                aspectRatio: _camControl?.value?.aspectRatio,
+                aspectRatio: _camControl?.value?.previewSize != null ?
+                            _camControl?.value?.aspectRatio : 10.0,
                 child: FutureBuilder<void>(
                   future: _camFuture,
                   // ignore: missing_return
