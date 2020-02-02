@@ -13,7 +13,7 @@ Future<void> main() async {
   await Tflite.loadModel(
     model: "assets/ssd_mobilenet.tflite",
     labels: "assets/ssd_mobilenet.txt",
-    numThreads: 1,
+    numThreads: 2,
   );
   runApp(CoralClassify(cameras: cameras));
 }
@@ -50,15 +50,22 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
 
+  /// Used to control the camera
   CameraController _camControl;
+  /// Used to initialize the camera
   Future<void> _camFuture;
+  /// A Map representing the location in an image that contains an object
   Map _savedRect;
-  String _savedObjectName;
+  /// The type of object detected
+  String _savedObjectType;
+  /// Confidence that it is the type of Object
   double _savedProb;
+  /// Flag determining when a coral is being detected
   bool _isDetecting;
 
   @override
   void initState() {
+
     super.initState();
     _isDetecting = false;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
@@ -80,7 +87,7 @@ class _CameraPageState extends State<CameraPage> {
     super.dispose();
   }
 
-  // Find Corals from a CameraImage
+  /// Find Corals in [image]
   Future<List> _findCorals(CameraImage image) async {
 
     List resultList = await Tflite.detectObjectOnFrame(
@@ -98,29 +105,28 @@ class _CameraPageState extends State<CameraPage> {
     List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
     Map biggestRect; // Biggest Rect of detected Object
     double maxProb = 0.0;
-    String name; // Detected Object name
+    String objectType; // Detected Object name
     double prob; // Confidence in Class
 
     if(resultList != null) {
       for (var item in resultList) {
         if (possibleCoral.contains(item["detectedClass"])) {
-          Map aRect = item["rect"];
+          // Choose Object with greatest confidence
           if (item["confidenceInClass"] > maxProb) {
-            // If bigger rectangle set data that is to be returned
-            biggestRect = aRect;
-            name = item["detectedClass"];
+            biggestRect = item["rect"];
+            objectType = item["detectedClass"];
             maxProb = prob = item["confidenceInClass"];
           }
         }
       }
     }
 
-    // Return Map of Rectangle, name of detected Object, and confidence in Class
-    return [biggestRect, name, prob];
+    // Return Map of rectangle, type of detected Object, and confidence
+    return [biggestRect, objectType, prob];
 
   }
 
-  // Process a CameraImage from the camera
+  /// Process [image] through TensorFlow model
   void _processCameraImage(CameraImage image) async {
     if(!_isDetecting) {
       _isDetecting = true;
@@ -132,13 +138,13 @@ class _CameraPageState extends State<CameraPage> {
       _isDetecting = false;
       setState(() {
         _savedRect = results[0][0];
-        _savedObjectName = results[0][1];
+        _savedObjectType = results[0][1];
         _savedProb = results[0][2];
       });
     }
   }
 
-  /// Take a picture
+  /// Take a picture and create a new page using [context] showing the image
   void _takePicture(BuildContext context) async {
     try {
       await _camFuture;
@@ -171,7 +177,7 @@ class _CameraPageState extends State<CameraPage> {
           children: <Widget>[
             Expanded(
               child:AspectRatio(
-                aspectRatio: _camControl.value.aspectRatio,
+                aspectRatio: _camControl?.value?.aspectRatio,
                 child: FutureBuilder<void>(
                   future: _camFuture,
                   // ignore: missing_return
@@ -195,7 +201,7 @@ class _CameraPageState extends State<CameraPage> {
                                 painter:
                                   ObjectRect(
                                       _savedRect,
-                                      _savedObjectName,
+                                      _savedObjectType,
                                       _savedProb
                                   )
                               ),
