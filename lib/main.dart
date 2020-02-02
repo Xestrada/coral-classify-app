@@ -144,11 +144,12 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
+  //* TODO - Ensure image stream is stopped and that the image stream is not started until returning to the camera page
   /// Take a picture and create a new page using [context] showing the image
   void _takePicture(BuildContext context) async {
     try {
+      // Ensure camera is ready and available
       await _camFuture;
-
       final String path = join(
           (await getTemporaryDirectory()).path,
           '${DateTime.now()}.png'
