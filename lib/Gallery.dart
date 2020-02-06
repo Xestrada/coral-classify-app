@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 class Gallery extends StatelessWidget {
-  final String imagePath;
 
-  const Gallery({Key key, this.imagePath}) : super(key: key);
+  const Gallery({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +11,16 @@ class Gallery extends StatelessWidget {
       appBar: AppBar(
         title: Text("Gallery"),
       ),
-      body: Image.file(File(imagePath)),
+      body: Container(
+        color: Colors.black,
+        child: Column(
+          children: <Widget>[
+            Center(
+              child: Text("Gallery of All Images Taken"),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

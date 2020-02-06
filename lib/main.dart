@@ -144,12 +144,13 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
-  //* TODO - Ensure image stream is stopped and that the image stream is not started until returning to the camera page
+  // TODO - Ensure image stream is stopped and that the image stream is not started until returning to the camera page
   /// Take a picture and create a new page using [context] showing the image
   void _takePicture(BuildContext context) async {
     try {
       // Ensure camera is ready and available
       await _camFuture;
+      // TODO - Find where data will be stored
       final String path = join(
           (await getTemporaryDirectory()).path,
           '${DateTime.now()}.png'
@@ -160,7 +161,7 @@ class _CameraPageState extends State<CameraPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => Gallery(imagePath: path),
+          builder: (context) => Gallery(),
         ),
       );
     } catch (e) {
@@ -177,7 +178,7 @@ class _CameraPageState extends State<CameraPage> {
         child: Column(
           children: <Widget>[
             Expanded(
-              child:AspectRatio(
+              child: AspectRatio(
                 aspectRatio: _camControl?.value?.previewSize != null ?
                             _camControl?.value?.aspectRatio : 10.0,
                 child: FutureBuilder<void>(
@@ -229,18 +230,31 @@ class _CameraPageState extends State<CameraPage> {
           ],
         ),
       ),
-      floatingActionButton: Stack(
-        children: <Widget> [
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: FloatingActionButton(
-              heroTag: null,
-              child: Icon(Icons.camera_alt),
-              onPressed: () => _takePicture(context),
+      floatingActionButton: FractionallySizedBox(
+        widthFactor: 0.8,
+        heightFactor: 0.1,
+        alignment: Alignment.bottomCenter,
+        child: Stack(
+          children: <Widget> [
+            Align(
+              alignment: Alignment.center,
+              child: FloatingActionButton(
+                heroTag: null,
+                child: Icon(Icons.camera_alt),
+                onPressed: () => _takePicture(context),
+              ),
             ),
-          ),
-        ],
-      ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FloatingActionButton(
+                heroTag: null,
+                child: Icon(Icons.photo_album),
+                onPressed: () => {},
+              ),
+            ),
+          ],
+        ),
+      )
     );
   }
 }
