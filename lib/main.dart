@@ -29,10 +29,14 @@ class CoralClassify extends StatelessWidget {
     return MaterialApp(
       title: 'Coral Classify',
       theme: ThemeData.dark(),
-      home: CameraPage(
+      initialRoute: '/',
+      routes: {
+        '/': (context) => CameraPage(
           title: 'Camera Page',
           cameras: cameras,
-      ),
+        ),
+        '/gallery': (context) => Gallery(),
+      }
     );
   }
 }
@@ -158,15 +162,18 @@ class _CameraPageState extends State<CameraPage> {
 
       await _camControl.takePicture(path);
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Gallery(),
-        ),
-      );
+      _goToGallery(context);
+
     } catch (e) {
       print(e);
     }
+  }
+
+  void _goToGallery(BuildContext context) {
+    Navigator.pushNamed(
+      context,
+      '/gallery'
+    );
   }
 
   @override
@@ -179,8 +186,7 @@ class _CameraPageState extends State<CameraPage> {
           children: <Widget>[
             Expanded(
               child: AspectRatio(
-                aspectRatio: _camControl?.value?.previewSize != null ?
-                            _camControl?.value?.aspectRatio : 10.0,
+                aspectRatio: 10,
                 child: FutureBuilder<void>(
                   future: _camFuture,
                   // ignore: missing_return
@@ -249,7 +255,7 @@ class _CameraPageState extends State<CameraPage> {
               child: FloatingActionButton(
                 heroTag: null,
                 child: Icon(Icons.photo_album),
-                onPressed: () => {},
+                onPressed: () => _goToGallery(context),
               ),
             ),
           ],
