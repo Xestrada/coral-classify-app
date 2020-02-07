@@ -40,7 +40,7 @@ class _GalleryState extends State<Gallery> {
         title: Text("Gallery"),
         actions: <Widget>[
           IconButton(
-            icon: Icon(_gridStyle ? Icons.grid_on : Icons.list),
+            icon: Icon(!_gridStyle ? Icons.grid_on : Icons.list),
             onPressed: () => _swapGalleryStyle(),
           ),
         ],
@@ -59,13 +59,26 @@ class _GalleryState extends State<Gallery> {
                         return e.path.contains(".jpg") || e.path.contains(".png");
                   });
 
-                  return ListView.separated(
+                  return !_gridStyle ? ListView.separated(
                     itemBuilder: (context, index)
                       => GalleryCard(imageFile: images.elementAt(index), info: '$index'),
                     separatorBuilder: (context, index) => Divider(),
                     itemCount: images.length,
                     shrinkWrap: true,
                     scrollDirection: Axis.vertical,
+                  )
+                      :
+                  GridView.count(
+                    shrinkWrap: true,
+                    scrollDirection: Axis.vertical,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    crossAxisCount: 2,
+                    children: List.generate(images.length, (index) {
+                      return Center(
+                        child: Image.file(File(images.elementAt(index).path))
+                      );
+                    })
                   );
 
                 } else {

@@ -237,7 +237,7 @@ class _CameraPageState extends State<CameraPage> {
         ),
       ),
       floatingActionButton: FractionallySizedBox(
-        widthFactor: 0.8,
+        widthFactor: 0.85,
         heightFactor: 0.1,
         alignment: Alignment.bottomCenter,
         child: Stack(
