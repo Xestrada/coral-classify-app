@@ -15,6 +15,7 @@ class Gallery extends StatefulWidget {
 class _GalleryState extends State<Gallery> {
 
   Future<Directory> _downloadDir;
+  bool _gridStyle = false;
 
   @override
   void initState() {
@@ -26,11 +27,23 @@ class _GalleryState extends State<Gallery> {
     _downloadDir = DownloadsPathProvider.downloadsDirectory;
   }
 
+  void _swapGalleryStyle() {
+    setState(() {
+      _gridStyle = !_gridStyle;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Gallery"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(_gridStyle ? Icons.grid_on : Icons.list),
+            onPressed: () => _swapGalleryStyle(),
+          ),
+        ],
       ),
       body: Container(
         color: Colors.black,
