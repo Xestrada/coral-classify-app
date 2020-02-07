@@ -169,6 +169,7 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
+  /// Go to the Gallery Page
   void _goToGallery(BuildContext context) {
     Navigator.pushNamed(
       context,

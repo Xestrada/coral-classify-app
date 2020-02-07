@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'dart:io';
 import './GalleryCard.dart';
+import './ClassifyPage.dart';
 
 class Gallery extends StatefulWidget {
 
@@ -23,14 +24,25 @@ class _GalleryState extends State<Gallery> {
     _getDownloadDir();
   }
 
+  /// Get the Download Directory
   void _getDownloadDir() async {
     _downloadDir = DownloadsPathProvider.downloadsDirectory;
   }
 
+  /// Switch to ListView/GridView
   void _swapGalleryStyle() {
     setState(() {
       _gridStyle = !_gridStyle;
     });
+  }
+
+  void _goToClassifyPage(FileSystemEntity file) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ClassifyPage(image: file)
+        )
+    );
   }
 
   @override
@@ -54,14 +66,18 @@ class _GalleryState extends State<Gallery> {
               builder: (context, snapshot) {
                 if(snapshot.connectionState == ConnectionState.done) {
 
+                  // Get all image files in Downloads dir
                   Iterable<FileSystemEntity> images = snapshot.data
                       .listSync(recursive: false, followLinks: false).where((FileSystemEntity e) {
                         return e.path.contains(".jpg") || e.path.contains(".png");
                   });
 
+                  // Show either GridView or ListView
                   return !_gridStyle ? ListView.separated(
-                    itemBuilder: (context, index)
-                      => GalleryCard(imageFile: images.elementAt(index), info: '$index'),
+                    itemBuilder: (context, index) => GestureDetector(
+                        onTap: () => _goToClassifyPage(images.elementAt(index)),
+                        child: GalleryCard(imageFile: images.elementAt(index), info: '$index')
+                      ),
                     separatorBuilder: (context, index) => Divider(),
                     itemCount: images.length,
                     shrinkWrap: true,
@@ -75,8 +91,11 @@ class _GalleryState extends State<Gallery> {
                     mainAxisSpacing: 10,
                     crossAxisCount: 2,
                     children: List.generate(images.length, (index) {
-                      return Center(
-                        child: Image.file(File(images.elementAt(index).path))
+                      return GestureDetector(
+                        child: Center(
+                          child: Image.file(File(images.elementAt(index).path))
+                        ),
+                        onTap: () => _goToClassifyPage(images.elementAt(index)),
                       );
                     })
                   );
