@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:animated_card/animated_card.dart';
 import 'dart:io';
 
 class GalleryCard extends StatelessWidget {
 
-  final String imagePath;
+  final FileSystemEntity imageFile;
   final String info;
 
-  const GalleryCard({Key key, this.imagePath, this.info}) : super(key: key);
+  const GalleryCard({Key key, this.imageFile, this.info}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return AnimatedCard(
+      direction: AnimatedCardDirection.left,
+      initDelay: Duration(milliseconds: 0),
+      duration: Duration(milliseconds: 500),
       child: Row(
         children: <Widget> [
           Expanded(
             flex: 2,
-            child: Image.file(File(imagePath)),
+            child: Image.file(File(imageFile.path)),
           ),
           Expanded(
             flex: 3,
@@ -23,7 +27,6 @@ class GalleryCard extends StatelessWidget {
               child: Text(info),
             ),
           )
-
         ],
       ),
     );
