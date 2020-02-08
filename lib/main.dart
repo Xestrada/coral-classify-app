@@ -170,10 +170,14 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   /// Go to the Gallery Page
-  void _goToGallery(BuildContext context) {
-    Navigator.pushNamed(
+  void _goToGallery(BuildContext context) async {
+    await _camControl.stopImageStream();
+    await Navigator.pushNamed(
       context,
       '/gallery'
+    );
+    await _camControl.startImageStream((CameraImage image) =>
+        _processCameraImage(image)
     );
   }
 
