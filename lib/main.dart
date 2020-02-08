@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:tflite/tflite.dart';
@@ -69,12 +70,15 @@ class _CameraPageState extends State<CameraPage> {
   bool _isDetecting;
   // Flag Determining if an ImageStream is running
   bool _isImageStreaming;
+  //Flag controlling ImageStreaming
+  bool _shouldImageStream;
 
   @override
   void initState() {
 
     super.initState();
     _isDetecting = false;
+    _shouldImageStream = true;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
@@ -165,7 +169,7 @@ class _CameraPageState extends State<CameraPage> {
     try {
 
       // Stop Image Stream.
-      if(_isImageStreaming) {
+      if(_isImageStreaming && _shouldImageStream) {
         await _camControl.stopImageStream();
         _isImageStreaming = false;
       }
@@ -176,7 +180,7 @@ class _CameraPageState extends State<CameraPage> {
       // Go to ClassifyPage
       _goToClassifyPage(context, path);
       //Restart ImageStreaming
-      if(!_isImageStreaming) {
+      if(!_isImageStreaming && _shouldImageStream) {
         await _camControl.startImageStream((CameraImage image) =>
             _processCameraImage(image)
         );
@@ -188,6 +192,7 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
+  /// Go to ClassifyPage while opening image at [path]
   void _goToClassifyPage(BuildContext context, String path) async {
     await Navigator.push(
         context,
@@ -199,19 +204,40 @@ class _CameraPageState extends State<CameraPage> {
 
   /// Go to the Gallery Page
   void _goToGallery(BuildContext context) async {
-    if(_isImageStreaming) {
+    //Stop ImageStream
+    if(_isImageStreaming && _shouldImageStream) {
       await _camControl.stopImageStream();
       _isImageStreaming = false;
     }
+    // Go to Gallery and wait until popped
     await Navigator.pushNamed(
       context,
       '/gallery'
     );
-    if(!_isImageStreaming) {
+    //Restart ImageStreaming
+    if(!_isImageStreaming && _shouldImageStream) {
       await _camControl.startImageStream((CameraImage image) =>
           _processCameraImage(image)
       );
       _isImageStreaming = true;
+    }
+  }
+
+  /// Toggle the ImageStream that allows for Object Detection
+  void _toggleImageStream() async {
+    //Toggle state
+    setState(() {
+      _shouldImageStream = !_shouldImageStream;
+    });
+    // Set Camera depending on state
+    if(_shouldImageStream) {
+      await _camControl.startImageStream((CameraImage image) =>
+          _processCameraImage(image)
+      );
+      _isImageStreaming = true;
+    } else {
+      await _camControl.stopImageStream();
+      _isImageStreaming = false;
     }
   }
 
@@ -281,6 +307,14 @@ class _CameraPageState extends State<CameraPage> {
         alignment: Alignment.bottomCenter,
         child: Stack(
           children: <Widget> [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: FloatingActionButton(
+                heroTag: null,
+                child: Icon(_shouldImageStream ? MdiIcons.eye : MdiIcons.eyeOff),
+                onPressed: () => _toggleImageStream(),
+              ),
+            ),
             Align(
               alignment: Alignment.center,
               child: FloatingActionButton(
