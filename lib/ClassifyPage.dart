@@ -6,6 +6,34 @@ class ClassifyPage extends StatelessWidget {
   final FileSystemEntity image;
 
   const ClassifyPage({Key key, this.image}) : super(key: key);
+  
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // return object of type Dialog
+        return AlertDialog(
+          title: Text("Delete Image"),
+          content: Text("Are you sure you want to delete this image and it's detected contents?"),
+          actions: <Widget>[
+            // usually buttons at the bottom of the dialog
+            FlatButton(
+              child: Text("No"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text("Yes"),
+              color: Colors.red,
+              onPressed: () => {},
+            ),
+          ],
+        );
+      },
+
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +80,7 @@ class ClassifyPage extends StatelessWidget {
                   backgroundColor: Colors.red,
                   heroTag: null,
                   child: Icon(Icons.delete_forever),
-                  onPressed: () => {},
+                  onPressed: () => _showDeleteDialog(context),
                 ),
               ),
             ],
