@@ -60,17 +60,17 @@ class _CameraPageState extends State<CameraPage> {
   CameraController _camControl;
   /// Used to initialize the camera
   Future<void> _camFuture;
-  /// A Map representing the location in an image that contains an object
-  Map _savedRect;
-  /// The type of object detected
-  String _savedObjectType;
-  /// Confidence that it is the type of Object
-  double _savedProb;
+  /// A Map representing currently detected Coral from an ImageStream
+  Map _currentRect;
+  /// The type of Coral detected
+  String _currentCoralType;
+  /// Confidence that it is the type of Coral
+  double _currentProb;
   /// Flag determining when a coral is being detected
   bool _isDetecting;
-  // Flag Determining if an ImageStream is running
+  /// Flag Determining if an ImageStream is running
   bool _isImageStreaming;
-  //Flag controlling ImageStreaming
+  /// Flag controlling ImageStreaming
   bool _shouldImageStream;
 
   @override
@@ -149,47 +149,39 @@ class _CameraPageState extends State<CameraPage> {
       );
       _isDetecting = false;
       setState(() {
-        _savedRect = results[0][0];
-        _savedObjectType = results[0][1];
-        _savedProb = results[0][2];
+        _currentRect = results[0][0];
+        _currentCoralType = results[0][1];
+        _currentProb = results[0][2];
       });
     }
   }
 
   /// Take a picture and create a new page using [context] showing the image
   void _takePicture(BuildContext context) async {
+
     // Ensure camera is ready and available
     await _camFuture;
 
-    final String path = join(
-        (await getTemporaryDirectory()).path,
-        '${DateTime.now()}.png'
-    );
+    final String dir = (await getTemporaryDirectory()).path;
 
     try {
 
+      // TODO - Fix issue with delay being necessary to take picture.
       // Stop Image Stream.
-      if(_isImageStreaming && _shouldImageStream) {
-        await _camControl.stopImageStream();
-        _isImageStreaming = false;
-      }
-      // TODO - Fix issue with delay being necessary to take picture
+      await _disableImageStream();
       // Attempt to take picture
-      await Future.delayed(Duration(milliseconds: 4));
-      await _camControl.takePicture(path);
+      final String stamp = "${DateTime.now()}.png";
+      await Future.delayed(Duration(milliseconds: 5));
+      await _camControl.takePicture(join(dir, "$stamp"));
       // Go to ClassifyPage
-      _goToClassifyPage(context, path);
+      _goToClassifyPage(context, join(dir, "$stamp"));
       //Restart ImageStreaming
-      if(!_isImageStreaming && _shouldImageStream) {
-        await _camControl.startImageStream((CameraImage image) =>
-            _processCameraImage(image)
-        );
-        _isImageStreaming = true;
-      }
+      await _enableImageStream();
 
     } catch (e) {
       print(e);
     }
+
   }
 
   /// Go to ClassifyPage while opening image at [path]
@@ -205,22 +197,14 @@ class _CameraPageState extends State<CameraPage> {
   /// Go to the Gallery Page
   void _goToGallery(BuildContext context) async {
     //Stop ImageStream
-    if(_isImageStreaming && _shouldImageStream) {
-      await _camControl.stopImageStream();
-      _isImageStreaming = false;
-    }
+    await _disableImageStream();
     // Go to Gallery and wait until popped
     await Navigator.pushNamed(
       context,
       '/gallery'
     );
     //Restart ImageStreaming
-    if(!_isImageStreaming && _shouldImageStream) {
-      await _camControl.startImageStream((CameraImage image) =>
-          _processCameraImage(image)
-      );
-      _isImageStreaming = true;
-    }
+    await _enableImageStream();
   }
 
   /// Toggle the ImageStream that allows for Object Detection
@@ -238,6 +222,24 @@ class _CameraPageState extends State<CameraPage> {
     } else {
       await _camControl.stopImageStream();
       _isImageStreaming = false;
+    }
+  }
+
+  /// Disable the ImageStream
+  Future<void> _disableImageStream() async {
+    if(_isImageStreaming && _shouldImageStream) {
+      await _camControl.stopImageStream();
+      _isImageStreaming = false;
+    }
+  }
+
+  /// Enable the ImageStream
+  Future<void> _enableImageStream() async {
+    if(!_isImageStreaming && _shouldImageStream) {
+      await _camControl.startImageStream((CameraImage image) =>
+          _processCameraImage(image)
+      );
+      _isImageStreaming = true;
     }
   }
 
@@ -274,9 +276,9 @@ class _CameraPageState extends State<CameraPage> {
                               CustomPaint(
                                 painter:
                                   ObjectRect(
-                                      _savedRect,
-                                      _savedObjectType,
-                                      _savedProb
+                                      _currentRect,
+                                      _currentCoralType,
+                                      _currentProb,
                                   )
                               ),
                             ]
