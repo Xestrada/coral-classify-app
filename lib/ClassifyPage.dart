@@ -3,9 +3,9 @@ import 'dart:io';
 
 class ClassifyPage extends StatelessWidget {
 
-  final FileSystemEntity image;
+  final String path;
 
-  const ClassifyPage({Key key, this.image}) : super(key: key);
+  const ClassifyPage({Key key, this.path}) : super(key: key);
   
   void _showDeleteDialog(BuildContext context) {
     showDialog(
@@ -46,7 +46,7 @@ class ClassifyPage extends StatelessWidget {
               Expanded(
                 child: AspectRatio(
                   aspectRatio: 10,
-                  child: Image.file(File(image.path)),
+                  child: Image.file(File(path)),
                 ),
               ),
             ],

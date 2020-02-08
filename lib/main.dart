@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'package:tflite/tflite.dart';
 import './Gallery.dart';
 import './ObjectRect.dart';
+import './ClassifyPage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -66,6 +67,8 @@ class _CameraPageState extends State<CameraPage> {
   double _savedProb;
   /// Flag determining when a coral is being detected
   bool _isDetecting;
+  // Flag Determining if an ImageStream is running
+  bool _isImageStreaming;
 
   @override
   void initState() {
@@ -76,11 +79,12 @@ class _CameraPageState extends State<CameraPage> {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
     // Setup Camera Control
-    _camControl = CameraController(widget.cameras.first, ResolutionPreset.max);
+    _camControl = CameraController(widget.cameras.first, ResolutionPreset.max, enableAudio: false);
     _camFuture = _camControl.initialize().then((_) async {
       await _camControl.startImageStream((CameraImage image) =>
           _processCameraImage(image)
       );
+      _isImageStreaming = true;
     });
 
   }
@@ -148,37 +152,67 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
-  // TODO - Ensure image stream is stopped and that the image stream is not started until returning to the camera page
   /// Take a picture and create a new page using [context] showing the image
   void _takePicture(BuildContext context) async {
+    // Ensure camera is ready and available
+    await _camFuture;
+
+    final String path = join(
+        (await getTemporaryDirectory()).path,
+        '${DateTime.now()}.png'
+    );
+
     try {
-      // Ensure camera is ready and available
-      await _camFuture;
-      // TODO - Find where data will be stored
-      final String path = join(
-          (await getTemporaryDirectory()).path,
-          '${DateTime.now()}.png'
-      );
 
+      // Stop Image Stream.
+      if(_isImageStreaming) {
+        await _camControl.stopImageStream();
+        _isImageStreaming = false;
+      }
+      // TODO - Fix issue with delay being necessary to take picture
+      // Attempt to take picture
+      await Future.delayed(Duration(milliseconds: 4));
       await _camControl.takePicture(path);
-
-      _goToGallery(context);
+      // Go to ClassifyPage
+      _goToClassifyPage(context, path);
+      //Restart ImageStreaming
+      if(!_isImageStreaming) {
+        await _camControl.startImageStream((CameraImage image) =>
+            _processCameraImage(image)
+        );
+        _isImageStreaming = true;
+      }
 
     } catch (e) {
       print(e);
     }
   }
 
+  void _goToClassifyPage(BuildContext context, String path) async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ClassifyPage(path: path)
+        )
+    );
+  }
+
   /// Go to the Gallery Page
   void _goToGallery(BuildContext context) async {
-    await _camControl.stopImageStream();
+    if(_isImageStreaming) {
+      await _camControl.stopImageStream();
+      _isImageStreaming = false;
+    }
     await Navigator.pushNamed(
       context,
       '/gallery'
     );
-    await _camControl.startImageStream((CameraImage image) =>
-        _processCameraImage(image)
-    );
+    if(!_isImageStreaming) {
+      await _camControl.startImageStream((CameraImage image) =>
+          _processCameraImage(image)
+      );
+      _isImageStreaming = true;
+    }
   }
 
   @override

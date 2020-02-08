@@ -36,11 +36,11 @@ class _GalleryState extends State<Gallery> {
     });
   }
 
-  void _goToClassifyPage(FileSystemEntity file) {
+  void _goToClassifyPage(String file) {
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ClassifyPage(image: file)
+          builder: (context) => ClassifyPage(path: file)
         )
     );
   }
@@ -75,7 +75,7 @@ class _GalleryState extends State<Gallery> {
                   // Show either GridView or ListView
                   return !_gridStyle ? ListView.separated(
                     itemBuilder: (context, index) => GestureDetector(
-                        onTap: () => _goToClassifyPage(images.elementAt(index)),
+                        onTap: () => _goToClassifyPage(images.elementAt(index).path),
                         child: GalleryCard(imageFile: images.elementAt(index), info: '$index')
                       ),
                     separatorBuilder: (context, index) => Divider(),
@@ -95,7 +95,7 @@ class _GalleryState extends State<Gallery> {
                         child: Center(
                           child: Image.file(File(images.elementAt(index).path))
                         ),
-                        onTap: () => _goToClassifyPage(images.elementAt(index)),
+                        onTap: () => _goToClassifyPage(images.elementAt(index).path),
                       );
                     })
                   );
