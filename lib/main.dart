@@ -61,11 +61,11 @@ class _CameraPageState extends State<CameraPage> {
   /// Used to initialize the camera
   Future<void> _camFuture;
   /// A Map representing currently detected Coral from an ImageStream
-  Map _currentRect;
+  Map _currentRect, _savedRect;
   /// The type of Coral detected
-  String _currentCoralType;
+  String _currentCoralType, _savedCoralType;
   /// Confidence that it is the type of Coral
-  double _currentProb;
+  double _currentProb, _savedProb;
   /// Flag determining when a coral is being detected
   bool _isDetecting;
   /// Flag Determining if an ImageStream is running
@@ -83,7 +83,7 @@ class _CameraPageState extends State<CameraPage> {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
     // Setup Camera Control
-    _camControl = CameraController(widget.cameras.first, ResolutionPreset.max, enableAudio: false);
+    _camControl = CameraController(widget.cameras.first, ResolutionPreset.high, enableAudio: false);
     _camFuture = _camControl.initialize().then((_) async {
       await _camControl.startImageStream((CameraImage image) =>
           _processCameraImage(image)
@@ -162,7 +162,13 @@ class _CameraPageState extends State<CameraPage> {
     // Ensure camera is ready and available
     await _camFuture;
 
+    // Get directory for images to be saved in
     final String dir = (await getTemporaryDirectory()).path;
+
+    // Save currently detected Corals
+    _savedRect = _currentRect;
+    _savedCoralType = _currentCoralType;
+    _savedProb = _currentProb;
 
     try {
 
@@ -180,6 +186,7 @@ class _CameraPageState extends State<CameraPage> {
 
     } catch (e) {
       print(e);
+      _enableImageStream();
     }
 
   }
@@ -189,7 +196,7 @@ class _CameraPageState extends State<CameraPage> {
     await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => ClassifyPage(path: path)
+            builder: (context) => ClassifyPage(path: path, data: [_savedRect, _savedCoralType, _savedProb],)
         )
     );
   }

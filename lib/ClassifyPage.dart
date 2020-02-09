@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import './ObjectRect.dart';
 
 class ClassifyPage extends StatelessWidget {
 
   final String path;
+  /// Will follow order: Map, String, double. Data can be null
+  final List data;
 
-  const ClassifyPage({Key key, this.path}) : super(key: key);
+  const ClassifyPage({Key key, @required this.path, this.data}) : super(key: key);
   
   void _showDeleteDialog(BuildContext context) {
     showDialog(
@@ -46,7 +49,20 @@ class ClassifyPage extends StatelessWidget {
               Expanded(
                 child: AspectRatio(
                   aspectRatio: 10,
-                  child: Image.file(File(path)),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: <Widget> [
+                      Image.file(File(path)),
+                      CustomPaint(
+                          painter: data != null ?
+                          ObjectRect(
+                            data[0],
+                            data[1],
+                            data[2],
+                          ) : null
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
