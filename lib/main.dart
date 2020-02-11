@@ -170,23 +170,30 @@ class _CameraPageState extends State<CameraPage> {
     _savedCoralType = _currentCoralType;
     _savedProb = _currentProb;
 
+    // Stop Image Stream.
+    await _disableImageStream();
+
+    // Name the Image
+    final String stamp = "${DateTime.now()}.png";
+
+    // Add delay
+    // TODO - Wait for Camera plugin update to fix hacky takePicture
+    await Future.delayed(Duration(milliseconds: 2));
+
     try {
 
-      // TODO - Fix issue with delay being necessary to take picture.
-      // Stop Image Stream.
-      await _disableImageStream();
-      // Attempt to take picture
-      final String stamp = "${DateTime.now()}.png";
-      await Future.delayed(Duration(milliseconds: 5));
-      await _camControl.takePicture(join(dir, "$stamp"));
-      // Go to ClassifyPage
-      _goToClassifyPage(context, join(dir, "$stamp"));
-      //Restart ImageStreaming
+      final String _saveDir = join(dir, "$stamp");
+      await _camControl.takePicture(_saveDir);
+
+      // Go to ClassifyPage only if no CameraError
+      _goToClassifyPage(context, _saveDir);
+      //Restart ImageStream
       await _enableImageStream();
 
-    } catch (e) {
-      print(e);
-      _enableImageStream();
+    } catch(e) {
+      // Restart this method if failed
+      // DUE TO BUG IN FLUTTER CAMERA PLUGIN REGARDING RESTARTING IMAGESTREAM
+      _takePicture(context);
     }
 
   }
@@ -196,7 +203,10 @@ class _CameraPageState extends State<CameraPage> {
     await Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => ClassifyPage(path: path, data: [_savedRect, _savedCoralType, _savedProb],)
+            builder: (context) => ClassifyPage(
+              path: path,
+              data: [_savedRect, _savedCoralType, _savedProb],
+            )
         )
     );
   }
