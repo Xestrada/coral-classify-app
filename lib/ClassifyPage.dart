@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
-import './ObjectRect.dart';
+import './DetectDraw.dart';
 
 class ClassifyPage extends StatelessWidget {
 
@@ -59,7 +59,7 @@ class ClassifyPage extends StatelessWidget {
                     Image.file(File(path)),
                     CustomPaint(
                         painter: data != null ?
-                        ObjectRect(
+                        DetectDraw(
                           data[0],
                           data[1],
                           data[2],

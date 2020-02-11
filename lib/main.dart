@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:tflite/tflite.dart';
 import './Gallery.dart';
-import './ObjectRect.dart';
+import './DetectDraw.dart';
 import './ClassifyPage.dart';
 
 Future<void> main() async {
@@ -292,7 +292,7 @@ class _CameraPageState extends State<CameraPage> {
                               CameraPreview(_camControl),
                               CustomPaint(
                                 painter:
-                                  ObjectRect(
+                                  DetectDraw(
                                       _currentRect,
                                       _currentCoralType,
                                       _currentProb,
