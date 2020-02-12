@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'dart:io';
 import './DetectDraw.dart';
 
@@ -75,40 +76,29 @@ class ClassifyPage extends StatelessWidget {
       floatingActionButton: Stack(
         fit: StackFit.expand,
         children: <Widget>[
-//          FractionallySizedBox(
-//            widthFactor: 0.85,
-//            heightFactor: 0.25,
-//            alignment: Alignment.topCenter,
-//            child: Stack(
-//              children: <Widget> [
-//                Align(
-//                  alignment: Alignment.centerLeft,
-//                  child: FloatingActionButton(
-//                    heroTag: null,
-//                    child: Icon(Icons.arrow_back),
-//                    onPressed: () => Navigator.pop(context),
-//                  ),
-//                ),
-//                Align(
-//                  alignment: Alignment.center,
-//                  child: FloatingActionButton(
-//                    heroTag: null,
-//                    child: Icon(Icons.remove_red_eye),
-//                    onPressed: () => {},
-//                  ),
-//                ),
-//                Align(
-//                  alignment: Alignment.centerRight,
-//                  child: FloatingActionButton(
-//                    backgroundColor: Colors.red,
-//                    heroTag: null,
-//                    child: Icon(Icons.delete_forever),
-//                    onPressed: () => _showDeleteDialog(context),
-//                  ),
-//                ),
-//              ],
-//            ),
-//          ),
+          FractionallySizedBox(
+            widthFactor: 0.85,
+            heightFactor: 0.25,
+            alignment: Alignment.topCenter,
+            child: Stack(
+              children: <Widget> [
+                Align(
+                  alignment: Alignment.center,
+                  child: IconButton(
+                    icon: Icon(MdiIcons.imageEditOutline),
+                    onPressed: () => {},
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: Icon(Icons.save),
+                    onPressed: () => {},
+                  ),
+                ),
+              ],
+            ),
+          ),
           FractionallySizedBox(
             widthFactor: 0.85,
             heightFactor: 0.1,
@@ -136,7 +126,7 @@ class ClassifyPage extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: FloatingActionButton(
                     heroTag: null,
-                    child: Icon(Icons.save_alt),
+                    child: Icon(Icons.check),
                     onPressed: () => _saveImage(context),
                   ),
                 ),
