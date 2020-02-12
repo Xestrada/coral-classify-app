@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:downloads_path_provider/downloads_path_provider.dart';
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import './GalleryCard.dart';
 import './ClassifyPage.dart';
@@ -16,17 +17,23 @@ class Gallery extends StatefulWidget {
 class _GalleryState extends State<Gallery> {
 
   Future<Directory> _downloadDir;
+  Future<Directory> _programDir;
   bool _gridStyle = false;
 
   @override
   void initState() {
     super.initState();
-    _getDownloadDir();
+    _getProgramDir();
   }
 
   /// Get the Download Directory
   void _getDownloadDir() async {
     _downloadDir = DownloadsPathProvider.downloadsDirectory;
+  }
+
+  /// Get Program files Directory
+  void _getProgramDir() async {
+    _programDir = getApplicationDocumentsDirectory();
   }
 
   /// Switch to ListView/GridView
@@ -62,7 +69,7 @@ class _GalleryState extends State<Gallery> {
         child: Column(
           children: <Widget>[
             FutureBuilder<Directory>(
-              future: _downloadDir,
+              future: _programDir,
               builder: (context, snapshot) {
                 if(snapshot.connectionState == ConnectionState.done) {
 

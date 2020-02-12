@@ -30,7 +30,7 @@ class ClassifyPage extends StatelessWidget {
             FlatButton(
               child: Text("Yes"),
               color: Colors.red,
-              onPressed: () => {},
+              onPressed: () => _deleteImage(context),
             ),
           ],
         );
@@ -41,6 +41,20 @@ class ClassifyPage extends StatelessWidget {
   void _saveImage(BuildContext context) {
     // Should save JSON data to path
     Navigator.pop(context);
+  }
+
+  void _deleteImage(BuildContext context) async {
+    File f = File(this.path);
+
+    try {
+      await f.delete(recursive: false);
+    } catch(e) {
+      print(e);
+    }
+
+    Navigator.pop(context);
+    Navigator.pop(context);
+
   }
 
   @override

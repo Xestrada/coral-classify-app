@@ -163,7 +163,7 @@ class _CameraPageState extends State<CameraPage> {
     await _camFuture;
 
     // Get directory for images to be saved in
-    final String dir = (await getTemporaryDirectory()).path;
+    final String dir = (await getApplicationDocumentsDirectory()).path;
 
     // Save currently detected Corals
     _savedRect = _currentRect;
