@@ -16,7 +16,6 @@ class Gallery extends StatefulWidget {
 
 class _GalleryState extends State<Gallery> {
 
-  Future<Directory> _downloadDir;
   Future<Directory> _programDir;
   bool _gridStyle = false;
 
@@ -24,11 +23,6 @@ class _GalleryState extends State<Gallery> {
   void initState() {
     super.initState();
     _getProgramDir();
-  }
-
-  /// Get the Download Directory
-  void _getDownloadDir() async {
-    _downloadDir = DownloadsPathProvider.downloadsDirectory;
   }
 
   /// Get Program files Directory

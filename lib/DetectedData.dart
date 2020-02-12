@@ -1,6 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
 
-@JsonSerializable(nullable: false)
+part 'DetectedData.g.dart';
+
+@JsonSerializable()
 class DetectedData {
   final Map rect;
   final String detectedClass;

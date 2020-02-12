@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:path/path.dart';
 import 'dart:io';
+import 'dart:convert';
 import './DetectDraw.dart';
+import './DetectedData.dart';
 
 class ClassifyPage extends StatelessWidget {
 
   final String path;
   /// Will follow order: [Map, String, double]. Data can be null
-  final List data;
+  final DetectedData data;
 
   const ClassifyPage({Key key, @required this.path, this.data}) : super(key: key);
   
@@ -38,16 +41,27 @@ class ClassifyPage extends StatelessWidget {
     );
   }
 
-  void _saveImage(BuildContext context) {
-    // Should save JSON data to path
+  void _saveImage(BuildContext context) async {
+    final String jsonPath = "${path.substring(0, path.length - 4)}.json";
+    Map<String, dynamic> _storableData = data.toJson();
+    File jsonFile = File(jsonPath);
+    jsonFile.writeAsString(jsonEncode(_storableData));
+    Navigator.pop(context);
+  }
+
+  void _saveImageToGallery(BuildContext context) {
+    // Save the image to the phone gallery
     Navigator.pop(context);
   }
 
   void _deleteImage(BuildContext context) async {
     File f = File(this.path);
+    final String jsonPath = "${path.substring(0, path.length - 4)}.json";
+    File jsonFile = File(jsonPath);
 
     try {
       await f.delete(recursive: false);
+      await jsonFile.delete(recursive: false);
     } catch(e) {
       print(e);
     }
@@ -75,9 +89,9 @@ class ClassifyPage extends StatelessWidget {
                     CustomPaint(
                         painter: data != null ?
                         DetectDraw(
-                          data[0],
-                          data[1],
-                          data[2],
+                          data.rect,
+                          data.detectedClass,
+                          data.prob,
                         ) : null
                     ),
                   ],

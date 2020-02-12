@@ -1,3 +1,4 @@
+import 'package:coral_classify/DetectedData.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
@@ -205,7 +206,11 @@ class _CameraPageState extends State<CameraPage> {
         MaterialPageRoute(
             builder: (context) => ClassifyPage(
               path: path,
-              data: [_savedRect, _savedCoralType, _savedProb],
+              data: DetectedData(
+                  rect: _savedRect,
+                  detectedClass: _savedCoralType,
+                  prob: _savedProb
+              ),
             )
         )
     );

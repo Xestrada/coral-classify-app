@@ -25,7 +25,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   camera: ^0.5.7+3
   downloads_path_provider: ^0.1.0
-  json_serializable: ^3.2.5
+  json_annotation: ^3.0.1
   material_design_icons_flutter: ^3.4.4895
   path_provider: ^1.5.1
   path: ^1.6.4
@@ -34,6 +34,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  json_serializable: ^3.2.5
+  build_runner: ^1.7.4
 
 
 # For information on the generic Dart part of this file, see the
