@@ -2,19 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:animated_card/animated_card.dart';
 import 'dart:io';
 
-class GalleryCard extends StatefulWidget {
+class GalleryCard extends StatelessWidget {
 
   final FileSystemEntity imageFile;
   final String info;
 
   const GalleryCard({Key key, this.imageFile, this.info}) : super(key: key);
-
-  @override
-  _GalleryCardState createState() => _GalleryCardState();
-
-}
-
-class _GalleryCardState extends State<GalleryCard> {
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +19,12 @@ class _GalleryCardState extends State<GalleryCard> {
         children: <Widget> [
           Expanded(
             flex: 2,
-            child: Image.file(File(widget.imageFile.path)),
+            child: Image.file(File(imageFile.path)),
           ),
           Expanded(
             flex: 3,
             child: Center(
-              child: Text(widget.info),
+              child: Text(info),
             ),
           )
         ],
