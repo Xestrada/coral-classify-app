@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class ObjectRect extends CustomPainter {
+class DetectDraw extends CustomPainter {
   Map rect;
   String objectName;
   double prob;
-  ObjectRect(this.rect, this.objectName, this.prob);
+  DetectDraw(this.rect, this.objectName, this.prob);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -41,6 +41,6 @@ class ObjectRect extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(ObjectRect old) => old.rect != rect;
+  bool shouldRepaint(DetectDraw old) => old.rect != rect;
 
 }
