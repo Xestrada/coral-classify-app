@@ -42,7 +42,8 @@ class ClassifyPage extends StatelessWidget {
 
   void _saveImage(BuildContext context) async {
     final String jsonPath = "${path.substring(0, path.length - 4)}.json";
-    Map<String, dynamic> _storableData = data == null
+    if(data != null) print(data.toJson());
+    Map<String, dynamic> _storableData = (data == null)
         ? DetectedData(rect: null, detectedClass: null, prob: null).toJson() :
         data.toJson();
     File jsonFile = File(jsonPath);

@@ -14,7 +14,7 @@ class GalleryCard extends StatelessWidget {
     return AnimatedCard(
       direction: AnimatedCardDirection.left,
       initDelay: Duration(milliseconds: 0),
-      duration: Duration(milliseconds: 500),
+      duration: Duration(milliseconds: 250),
       child: Row(
         children: <Widget> [
           Expanded(
@@ -24,7 +24,7 @@ class GalleryCard extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Center(
-              child: Text(info),
+              child: Text(info)
             ),
           )
         ],
