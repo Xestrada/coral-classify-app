@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:path/path.dart';
 import 'dart:io';
 import 'dart:convert';
 import './DetectDraw.dart';
@@ -43,7 +42,9 @@ class ClassifyPage extends StatelessWidget {
 
   void _saveImage(BuildContext context) async {
     final String jsonPath = "${path.substring(0, path.length - 4)}.json";
-    Map<String, dynamic> _storableData = data.toJson();
+    Map<String, dynamic> _storableData = data == null
+        ? DetectedData(rect: null, detectedClass: null, prob: null).toJson() :
+        data.toJson();
     File jsonFile = File(jsonPath);
     jsonFile.writeAsString(jsonEncode(_storableData));
     Navigator.pop(context);
