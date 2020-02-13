@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:downloads_path_provider/downloads_path_provider.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import './GalleryCard.dart';
@@ -77,7 +76,10 @@ class _GalleryState extends State<Gallery> {
                   return !_gridStyle ? ListView.separated(
                     itemBuilder: (context, index) => GestureDetector(
                         onTap: () => _goToClassifyPage(images.elementAt(index).path),
-                        child: GalleryCard(imageFile: images.elementAt(index), info: '$index')
+                        child: GalleryCard(
+                            imageFile: images.elementAt(index),
+                            info: '$index'
+                        )
                       ),
                     separatorBuilder: (context, index) => Divider(),
                     itemCount: images.length,
