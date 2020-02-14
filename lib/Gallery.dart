@@ -105,7 +105,8 @@ class _GalleryState extends State<Gallery> {
                       ),
                   child: GalleryCard(
                       imageFile: images.elementAt(index),
-                      info: snapshot.data.detectedClass
+                      info: snapshot.data.detectedClass == null
+                          ? "No Coral Detected" : snapshot.data.detectedClass
                   )
               );
             } else {
