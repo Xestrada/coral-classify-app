@@ -1,19 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:share_extend/share_extend.dart';
+import 'package:overlay_container/overlay_container.dart';
 import 'dart:io';
 import 'dart:convert';
 import './DetectDraw.dart';
 import './DetectedData.dart';
 
-class ClassifyPage extends StatelessWidget {
+class ClassifyPage extends StatefulWidget {
 
   final String path;
+
   /// Will follow order: [Map, String, double]. Data can be null
   final DetectedData data;
 
   const ClassifyPage({Key key, @required this.path, this.data}) : super(key: key);
-  
+
+  @override
+  _ClassifyPageState createState() => _ClassifyPageState();
+
+}
+
+class _ClassifyPageState extends State<ClassifyPage> {
+
+  bool _showData;
+
+  @override
+  void initState() {
+    super.initState();
+    _showData = false;
+  }
+
+  /// Show the Delete Dialog
   void _showDeleteDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -41,11 +59,12 @@ class ClassifyPage extends StatelessWidget {
     );
   }
 
+  /// Save the Image and any Detected Data
   void _saveImage(BuildContext context) async {
-    final String jsonPath = "${path.substring(0, path.length - 4)}.json";
-    Map<String, dynamic> _storableData = (data == null)
+    final String jsonPath = "${widget.path.substring(0, widget.path.length - 4)}.json";
+    Map<String, dynamic> _storableData = (widget.data == null)
         ? DetectedData(rect: null, detectedClass: null, prob: null).toJson() :
-        data.toJson();
+        widget.data.toJson();
     File jsonFile = File(jsonPath);
     jsonFile.writeAsString(jsonEncode(_storableData));
     Navigator.pop(context);
@@ -53,12 +72,13 @@ class ClassifyPage extends StatelessWidget {
 
   /// Share the Image
   void _shareImage() {
-    ShareExtend.share(this.path, "Coral Image");
+    ShareExtend.share(this.widget.path, "Coral Image");
   }
 
+  /// Delete the Image and any detected Data
   void _deleteImage(BuildContext context) async {
-    File f = File(this.path);
-    final String jsonPath = "${path.substring(0, path.length - 4)}.json";
+    File f = File(this.widget.path);
+    final String jsonPath = "${widget.path.substring(0, widget.path.length - 4)}.json";
     File jsonFile = File(jsonPath);
 
     try {
@@ -71,6 +91,15 @@ class ClassifyPage extends StatelessWidget {
     Navigator.pop(context);
     Navigator.pop(context);
 
+  }
+
+  // Tooggle Show Data
+  //TODO - Only toggle when clicked inside Rect
+  void _showImageData() {
+    print(widget.data?.rect);
+    setState(() {
+      _showData = !_showData;
+    });
   }
 
   @override
@@ -87,14 +116,40 @@ class ClassifyPage extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: <Widget> [
-                    Image.file(File(path)),
-                    CustomPaint(
-                        painter: data != null ?
-                        DetectDraw(
-                          data.rect,
-                          data.detectedClass,
-                          data.prob,
-                        ) : null
+                    Image.file(File(widget.path)),
+                    GestureDetector(
+                      onTap: () => _showImageData(),
+                      child: CustomPaint(
+                        painter: DetectDraw(
+                          widget.data?.rect,
+                        ),
+                      ),
+                    ),
+                    OverlayContainer(
+                      show: _showData,
+                      position: OverlayContainerPosition(
+                        // Left position.
+                        0,
+                        // Bottom position.
+                        0,
+                      ),
+                      // The content inside the overlay.
+                      child: Container(
+                        height: 70,
+                        padding: const EdgeInsets.all(20),
+                        margin: const EdgeInsets.only(top: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: <BoxShadow>[
+                            BoxShadow(
+                              color: Colors.grey[300],
+                              blurRadius: 3,
+                              spreadRadius: 6,
+                            )
+                          ],
+                        ),
+                        child: Text("I render outside the \nwidget hierarchy."),
+                      ),
                     ),
                   ],
                 ),

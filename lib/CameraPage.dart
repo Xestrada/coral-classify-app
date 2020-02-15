@@ -264,8 +264,6 @@ class _CameraPageState extends State<CameraPage> {
                                       painter:
                                       DetectDraw(
                                         _currentRect,
-                                        _currentCoralType,
-                                        _currentProb,
                                       )
                                   ),
                                 ]

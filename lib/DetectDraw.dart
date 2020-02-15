@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 
 class DetectDraw extends CustomPainter {
   Map rect;
-  String objectName;
-  double prob;
-  DetectDraw(this.rect, this.objectName, this.prob);
+  DetectDraw(this.rect);
 
   @override
   void paint(Canvas canvas, Size size) {
 
     if(rect != null) {
+
       // Draw Rectangle Surrounding Object
       final paint = Paint();
       paint.color = Colors.yellow;
@@ -22,19 +21,6 @@ class DetectDraw extends CustomPainter {
       h = rect["x"] * size.height;
       Rect rect1 = Offset(x, y) & Size(w, h);
       canvas.drawRect(rect1, paint);
-
-      // Draw Text describing Object
-      TextSpan span = new TextSpan(
-        style: new TextStyle(color: Colors.white),
-        text: (objectName + "\n" + (prob*100).toString() + "%"),
-      );
-      TextPainter tp = new TextPainter(
-        text: span,
-        textAlign: TextAlign.left,
-        textDirection: TextDirection.ltr,
-      );
-      tp.layout();
-      tp.paint(canvas, new Offset(x, y));
 
     }
 
