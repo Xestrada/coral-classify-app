@@ -136,12 +136,12 @@ class ClassifyPage extends StatelessWidget {
         children: <Widget>[
           FractionallySizedBox(
             widthFactor: 0.85,
-            heightFactor: 0.25,
+            heightFactor: 0.1,
             alignment: Alignment.topCenter,
             child: Stack(
               children: <Widget> [
                 Align(
-                  alignment: Alignment.center,
+                  alignment: Alignment.centerLeft,
                   child: IconButton(
                     icon: Icon(MdiIcons.imageEditOutline),
                     onPressed: () => {},
