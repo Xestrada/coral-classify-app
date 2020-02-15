@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:share_extend/share_extend.dart';
 import 'dart:io';
 import 'dart:convert';
 import './DetectDraw.dart';
@@ -41,32 +41,6 @@ class ClassifyPage extends StatelessWidget {
     );
   }
 
-  void _showSaveToGalleryDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        // return object of type Dialog
-        return AlertDialog(
-          title: Text("Save to Phone Gallery"),
-          content: Text("Are you sure you want to save this image to the gallery?"),
-          actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            FlatButton(
-              child: Text("No"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            FlatButton(
-              child: Text("Yes"),
-              onPressed: () => _saveImageToGallery(context),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _saveImage(BuildContext context) async {
     final String jsonPath = "${path.substring(0, path.length - 4)}.json";
     Map<String, dynamic> _storableData = (data == null)
@@ -77,11 +51,9 @@ class ClassifyPage extends StatelessWidget {
     Navigator.pop(context);
   }
 
-  //TODO - Implement properly working image saving
-  void _saveImageToGallery(BuildContext context) async {
-    // Save the image to the phone gallery
-    await ImageGallerySaver.saveFile(path);
-    Navigator.pop(context);
+  /// Share the Image
+  void _shareImage() {
+    ShareExtend.share(this.path, "Coral Image");
   }
 
   void _deleteImage(BuildContext context) async {
@@ -150,8 +122,8 @@ class ClassifyPage extends StatelessWidget {
                 Align(
                   alignment: Alignment.centerRight,
                   child: IconButton(
-                    icon: Icon(Icons.save),
-                    onPressed: () => _showSaveToGalleryDialog(context),
+                    icon: Icon(Icons.share),
+                    onPressed: () => _shareImage(),
                   ),
                 ),
               ],
