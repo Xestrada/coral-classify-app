@@ -264,6 +264,7 @@ class _CameraPageState extends State<CameraPage> {
                                       painter:
                                       DetectDraw(
                                         _currentRect,
+                                        MediaQuery.of(context).size,
                                       )
                                   ),
                                 ]

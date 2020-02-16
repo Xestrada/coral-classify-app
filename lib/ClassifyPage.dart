@@ -96,7 +96,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
   // Tooggle Show Data
   //TODO - Only toggle when clicked inside Rect
   void _showImageData() {
-    print(widget.data?.rect);
+    print(MediaQuery.of(context).size);
     setState(() {
       _showData = !_showData;
     });
@@ -114,14 +114,27 @@ class _ClassifyPageState extends State<ClassifyPage> {
               child: AspectRatio(
                 aspectRatio: 10,
                 child: Stack(
-                  fit: StackFit.expand,
                   children: <Widget> [
-                    Image.file(File(widget.path)),
-                    GestureDetector(
-                      onTap: () => _showImageData(),
-                      child: CustomPaint(
-                        painter: DetectDraw(
-                          widget.data?.rect,
+                    Align(
+                      alignment: Alignment.center,
+                      child: Image.file(File(widget.path)),
+                    ),
+                    CustomPaint(
+                      painter: DetectDraw(
+                        widget.data?.rect,
+                        MediaQuery.of(context).size,
+                      ),
+                    ),
+                    Container(
+                      height: MediaQuery.of(context).size.height,
+                      width: MediaQuery.of(context).size.width,
+                      child: GestureDetector(
+                        onTap: () => _showImageData(),
+                        child: CustomPaint(
+                          painter: DetectDraw(
+                            widget.data?.rect,
+                            MediaQuery.of(context).size,
+                          ),
                         ),
                       ),
                     ),
@@ -154,6 +167,14 @@ class _ClassifyPageState extends State<ClassifyPage> {
                   ],
                 ),
               ),
+            ),
+            Container(
+              decoration: new BoxDecoration(
+              borderRadius: new BorderRadius.circular(5.0),
+                color: Colors.white,
+              ),
+              height: 0.1,
+              width: 0.1,
             ),
           ],
         ),
