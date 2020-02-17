@@ -21,7 +21,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  animated_card: ^1.0.0+8
   cupertino_icons: ^0.1.2
   camera: ^0.5.7+3
   downloads_path_provider: ^0.1.0

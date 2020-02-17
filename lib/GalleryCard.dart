@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:animated_card/animated_card.dart';
 import 'dart:io';
 
 class GalleryCard extends StatelessWidget {
@@ -11,10 +10,9 @@ class GalleryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedCard(
-      direction: AnimatedCardDirection.left,
-      initDelay: Duration(milliseconds: 0),
-      duration: Duration(milliseconds: 250),
+    return Card(
+      color: Colors.black,
+      clipBehavior: Clip.hardEdge,
       child: Row(
         children: <Widget> [
           Expanded(

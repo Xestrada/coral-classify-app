@@ -58,11 +58,12 @@ class _GalleryState extends State<Gallery> {
 
   /// Build the Grid View
   Widget _buildGrid(Iterable<FileSystemEntity> images) {
+    //TODO - Fix Bad image layout
     return GridView.count(
         shrinkWrap: true,
         scrollDirection: Axis.vertical,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+        crossAxisSpacing: 0,
+        mainAxisSpacing: 0,
         crossAxisCount: 2,
         children: List.generate(images.length, (index) {
           return FutureBuilder(
@@ -70,8 +71,9 @@ class _GalleryState extends State<Gallery> {
             builder: (context, snapshot) {
               if(snapshot.connectionState == ConnectionState.done) {
                 return GestureDetector(
-                    child: Center(
-                        child: Image.file(File(images.elementAt(index).path))
+                    child: FittedBox(
+                      fit: BoxFit.fill,
+                      child: Image.file(File(images.elementAt(index).path))
                     ),
                     onTap: () =>
                         _goToClassifyPage(
@@ -139,7 +141,7 @@ class _GalleryState extends State<Gallery> {
         ],
       ),
       body: Container(
-        color: Colors.black,
+        color: Colors.white,
         child: FutureBuilder<Directory>(
           future: _programDir,
           builder: (context, snapshot) {
