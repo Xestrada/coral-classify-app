@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:share_extend/share_extend.dart';
-import 'package:overlay_container/overlay_container.dart';
 import 'dart:io';
 import 'dart:convert';
 import './DetectDraw.dart';
@@ -96,10 +95,42 @@ class _ClassifyPageState extends State<ClassifyPage> {
   // Tooggle Show Data
   //TODO - Only toggle when clicked inside Rect
   void _showImageData() {
-    print(MediaQuery.of(context).size);
+    print(-widget.data?.rect["y"] + (widget.data?.rect["h"] * 1.45));
     setState(() {
       _showData = !_showData;
     });
+  }
+  
+  Size _screenSize(BuildContext context) {
+    return MediaQuery.of(context).size;
+  }
+
+  Alignment _determineAlignment() {
+
+    if(widget.data?.rect == null) {
+      return Alignment(0, 0);
+    } else if(-widget.data?.rect["x"] + (widget.data?.rect["w"] * 2.8) < 1.0) {
+      return Alignment(
+          -widget.data?.rect["x"] + (widget.data?.rect["w"] * 2.8),
+          -widget.data?.rect["y"]
+      );
+    } else if(-widget.data?.rect["x"] - (widget.data?.rect["w"] * 3.1) > -1.0) {
+      return Alignment(
+          -widget.data?.rect["x"] - (widget.data?.rect["w"] * 3.1),
+          -widget.data?.rect["y"]
+      );
+    } else if(-widget.data?.rect["y"] + (widget.data?.rect["h"] * 1.45) < 1.0) {
+      return Alignment(
+        -widget.data?.rect["x"],
+        -widget.data?.rect["y"] + (widget.data?.rect["h"] * 1.45)
+      );
+    } else {
+      return Alignment(
+        -widget.data?.rect["x"],
+        -widget.data?.rect["y"] - (widget.data?.rect["h"] * 1.56)
+      );
+    }
+
   }
 
   @override
@@ -126,55 +157,68 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       ),
                     ),
                     Container(
-                      height: MediaQuery.of(context).size.height,
-                      width: MediaQuery.of(context).size.width,
+                      height: _screenSize(context).height,
+                      width: _screenSize(context).width,
                       child: GestureDetector(
                         onTap: () => _showImageData(),
                         child: CustomPaint(
                           painter: DetectDraw(
                             widget.data?.rect,
-                            MediaQuery.of(context).size,
+                            _screenSize(context),
                           ),
                         ),
                       ),
                     ),
-                    OverlayContainer(
-                      show: _showData,
-                      position: OverlayContainerPosition(
-                        // Left position.
-                        0,
-                        // Bottom position.
-                        0,
-                      ),
-                      // The content inside the overlay.
+                    Align(
+                      alignment: _determineAlignment(),
                       child: Container(
-                        height: 70,
-                        padding: const EdgeInsets.all(20),
-                        margin: const EdgeInsets.only(top: 5),
+                        width: _showData ? 170 : 0,
+                        height: _showData ? 100 : 0,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          boxShadow: <BoxShadow>[
-                            BoxShadow(
-                              color: Colors.grey[300],
-                              blurRadius: 3,
-                              spreadRadius: 6,
-                            )
-                          ],
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text("I render outside the \nwidget hierarchy."),
+                        child: RichText(
+                          text: TextSpan(
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 20,
+                              height: 2,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 10.0,
+                                  color: Colors.grey,
+                                  offset: Offset(5.0, 5.0),
+                                ),
+                              ],
+                            ),
+                            text: 'Type: ',
+                            children: <TextSpan>[
+                              TextSpan(
+                                style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                text: '${widget.data?.detectedClass}\n',
+                              ),
+                              TextSpan(
+                                text: 'Confidence: ',
+                              ),
+                              TextSpan(
+                                style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                text: '${((widget.data?.prob ?? 1)*10000).floor()/100}',
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            Container(
-              decoration: new BoxDecoration(
-              borderRadius: new BorderRadius.circular(5.0),
-                color: Colors.white,
-              ),
-              height: 0.1,
-              width: 0.1,
             ),
           ],
         ),

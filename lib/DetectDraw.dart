@@ -11,7 +11,6 @@ class DetectDraw extends CustomPainter {
   void paint(Canvas canvas, Size size) {
 
     if(rect != null) {
-      print(size);
       // Draw Rectangle Surrounding Object
       final paint = Paint();
       paint.color = Colors.yellow;
@@ -20,8 +19,8 @@ class DetectDraw extends CustomPainter {
       double x, y, w, h;
       x = rect["x"] * size.width;
       y = rect["y"] * size.height;
-      w = rect["x"] * size.width;
-      h = rect["x"] * size.height;
+      w = rect["w"] * size.width;
+      h = rect["h"] * size.height;
       Rect drawRect = Offset(x, y) & Size(w, h);
       canvas.drawRect(drawRect, paint);
 
@@ -38,8 +37,8 @@ class DetectDraw extends CustomPainter {
     double x, y, w, h;
     x = rect["x"] * screenSize.width;
     y = rect["y"] * screenSize.height;
-    w = rect["x"] * screenSize.width;
-    h = rect["x"] * screenSize.height;
+    w = rect["w"] * screenSize.width;
+    h = rect["h"] * screenSize.height;
     Rect drawRect = Offset(x, y) & Size(w, h);
     path.addRect(drawRect);
     path.close();

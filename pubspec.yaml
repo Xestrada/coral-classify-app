@@ -28,7 +28,6 @@ dependencies:
   image_gallery_saver: ^1.2.2
   json_annotation: ^3.0.1
   material_design_icons_flutter: ^3.4.4895
-  overlay_container: ^0.0.4+1
   path_provider: ^1.5.1
   path: ^1.6.4
   share_extend: ^1.1.1
