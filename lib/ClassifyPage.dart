@@ -22,12 +22,20 @@ class ClassifyPage extends StatefulWidget {
 
 class _ClassifyPageState extends State<ClassifyPage> {
 
+  Paint _unselected, _selected;
   bool _showData;
 
   @override
   void initState() {
     super.initState();
     _showData = false;
+    _selected = Paint();
+    _unselected = Paint();
+    _selected.color = Colors.blue;
+    _unselected.color = Colors.yellow;
+    _unselected.style = _selected.style = PaintingStyle.stroke;
+    _selected.strokeWidth = 2.5;
+    _unselected.strokeWidth = 1.0;
   }
 
   /// Show the Delete Dialog
@@ -150,12 +158,6 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       alignment: Alignment.center,
                       child: Image.file(File(widget.path)),
                     ),
-                    CustomPaint(
-                      painter: DetectDraw(
-                        widget.data?.rect,
-                        MediaQuery.of(context).size,
-                      ),
-                    ),
                     Container(
                       height: _screenSize(context).height,
                       width: _screenSize(context).width,
@@ -165,6 +167,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                           painter: DetectDraw(
                             widget.data?.rect,
                             _screenSize(context),
+                            _showData ? _selected : _unselected
                           ),
                         ),
                       ),
