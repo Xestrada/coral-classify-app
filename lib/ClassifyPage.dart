@@ -268,7 +268,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                   alignment: Alignment.center,
                   child: FloatingActionButton(
                     heroTag: null,
-                    child: Icon(Icons.remove_red_eye),
+                    child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
                     onPressed: () => {},
                   ),
                 ),
