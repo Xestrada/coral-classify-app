@@ -93,6 +93,7 @@ class _GalleryState extends State<Gallery> {
   /// Build the List View
   Widget _buildList(Iterable<FileSystemEntity> images) {
     return ListView.separated(
+      primary: true,
       itemBuilder: (context, index) => FutureBuilder (
         future: detectedData.elementAt(index),
           builder: (context, snapshot) {
@@ -127,6 +128,7 @@ class _GalleryState extends State<Gallery> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text("Gallery"),
         actions: <Widget>[
@@ -138,35 +140,31 @@ class _GalleryState extends State<Gallery> {
       ),
       body: Container(
         color: Colors.black,
-        child: Column(
-          children: <Widget>[
-            FutureBuilder<Directory>(
-              future: _programDir,
-              builder: (context, snapshot) {
-                if(snapshot.connectionState == ConnectionState.done) {
+        child: FutureBuilder<Directory>(
+          future: _programDir,
+          builder: (context, snapshot) {
+            if(snapshot.connectionState == ConnectionState.done) {
 
-                  // Get all image files in Downloads dir
-                  Iterable<FileSystemEntity> images = snapshot.data
-                      .listSync(recursive: false, followLinks: false).where((FileSystemEntity e) {
-                        return e.path.contains(".jpg") || e.path.contains(".png");
-                  });
+              // Get all image files in Downloads dir
+              Iterable<FileSystemEntity> images = snapshot.data
+                  .listSync(recursive: false, followLinks: false).where((FileSystemEntity e) {
+                    return e.path.contains(".jpg") || e.path.contains(".png");
+              });
 
-                  // Get and read all JSON files
-                  images.forEach( (FileSystemEntity image) {
-                    detectedData.add(_getJSONDataOf(image.path));
-                  });
+              // Get and read all JSON files
+              images.forEach( (FileSystemEntity image) {
+                detectedData.add(_getJSONDataOf(image.path));
+              });
 
-                  // Show either GridView or ListView
-                  return !_gridStyle ? _buildList(images) : _buildGrid(images);
+              // Show either GridView or ListView
+              return !_gridStyle ? _buildList(images) : _buildGrid(images);
 
 
-                } else {
-                  return Center(child: CircularProgressIndicator(),);
-                }
+            } else {
+              return Center(child: CircularProgressIndicator(),);
+            }
 
-              }
-            ),
-          ],
+          }
         ),
       ),
     );
