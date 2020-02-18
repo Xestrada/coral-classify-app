@@ -62,8 +62,8 @@ class _GalleryState extends State<Gallery> {
     return GridView.count(
         shrinkWrap: true,
         scrollDirection: Axis.vertical,
-        crossAxisSpacing: 0,
-        mainAxisSpacing: 0,
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
         crossAxisCount: 2,
         children: List.generate(images.length, (index) {
           return FutureBuilder(
@@ -71,15 +71,27 @@ class _GalleryState extends State<Gallery> {
             builder: (context, snapshot) {
               if(snapshot.connectionState == ConnectionState.done) {
                 return GestureDetector(
-                    child: FittedBox(
-                      fit: BoxFit.fill,
-                      child: Image.file(File(images.elementAt(index).path))
+                  child: Container(
+                    foregroundDecoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 20,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      image: DecorationImage(
+                        fit: BoxFit.fitWidth,
+                        image: FileImage(
+                          File(images.elementAt(index).path),
+                          scale: 0.5,
+                        ),
+                      ),
                     ),
-                    onTap: () =>
-                        _goToClassifyPage(
-                            images.elementAt(index).path,
-                            snapshot.data
-                        )
+                  ),
+                  onTap: () =>
+                      _goToClassifyPage(
+                          images.elementAt(index).path,
+                          snapshot.data
+                      )
                 );
               } else {
                 return Center(
@@ -130,7 +142,8 @@ class _GalleryState extends State<Gallery> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
+      extendBody: true,
       appBar: AppBar(
         title: Text("Gallery"),
         actions: <Widget>[
