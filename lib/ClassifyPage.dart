@@ -100,8 +100,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   }
 
-  // Tooggle Show Data
-  //TODO - Only toggle when clicked inside Rect
+  // Toggle Show Data
   void _showImageData() {
     print(-widget.data?.rect["y"] + (widget.data?.rect["h"] * 1.45));
     setState(() {
@@ -226,67 +225,70 @@ class _ClassifyPageState extends State<ClassifyPage> {
           ],
         ),
       ),
-      floatingActionButton: Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          FractionallySizedBox(
-            widthFactor: 0.85,
-            heightFactor: 0.1,
-            alignment: Alignment.topCenter,
-            child: Stack(
-              children: <Widget> [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: Icon(MdiIcons.imageEditOutline),
-                    onPressed: () => {},
+      floatingActionButton: SafeArea(
+        minimum: MediaQuery.of(context).padding,
+        child: Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            FractionallySizedBox(
+              widthFactor: 0.85,
+              heightFactor: 0.1,
+              alignment: Alignment.topCenter,
+              child: Stack(
+                children: <Widget> [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: Icon(MdiIcons.imageEditOutline),
+                      onPressed: () => {},
+                    ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    icon: Icon(Icons.share),
-                    onPressed: () => _shareImage(),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      icon: Icon(Icons.share),
+                      onPressed: () => _shareImage(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          FractionallySizedBox(
-            widthFactor: 0.85,
-            heightFactor: 0.1,
-            alignment: Alignment.bottomCenter,
-            child: Stack(
-              children: <Widget> [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: FloatingActionButton(
-                    backgroundColor: Colors.red,
-                    heroTag: null,
-                    child: Icon(Icons.delete_forever),
-                    onPressed: () => _showDeleteDialog(context),
+            FractionallySizedBox(
+              widthFactor: 0.85,
+              heightFactor: 0.1,
+              alignment: Alignment.bottomCenter,
+              child: Stack(
+                children: <Widget> [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FloatingActionButton(
+                      backgroundColor: Colors.red,
+                      heroTag: null,
+                      child: Icon(Icons.delete_forever),
+                      onPressed: () => _showDeleteDialog(context),
+                    ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: FloatingActionButton(
-                    heroTag: null,
-                    child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
-                    onPressed: () => {},
+                  Align(
+                    alignment: Alignment.center,
+                    child: FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
+                      onPressed: () => {},
+                    ),
                   ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: FloatingActionButton(
-                    heroTag: null,
-                    child: Icon(Icons.check),
-                    onPressed: () => _saveImage(context),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: FloatingActionButton(
+                      heroTag: null,
+                      child: Icon(Icons.check),
+                      onPressed: () => _saveImage(context),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ]
+          ]
+        ),
       ),
     );
   }
