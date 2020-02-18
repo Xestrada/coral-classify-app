@@ -11,9 +11,9 @@ class ClassifyPage extends StatefulWidget {
   final String path;
 
   /// Will follow order: [Map, String, double]. Data can be null
-  final DetectedData data;
+  DetectedData data;
 
-  const ClassifyPage({Key key, @required this.path, this.data}) : super(key: key);
+  ClassifyPage({Key key, @required this.path, this.data}) : super(key: key);
 
   @override
   _ClassifyPageState createState() => _ClassifyPageState();
@@ -22,20 +22,26 @@ class ClassifyPage extends StatefulWidget {
 
 class _ClassifyPageState extends State<ClassifyPage> {
 
-  Paint _unselected, _selected;
+  Paint _unselectedPaint, _selectedPaint, _editingPaint;
   bool _showData;
+  bool _editMode;
 
   @override
   void initState() {
     super.initState();
+    _editMode = false;
     _showData = false;
-    _selected = Paint();
-    _unselected = Paint();
-    _selected.color = Colors.blue;
-    _unselected.color = Colors.yellow;
-    _unselected.style = _selected.style = PaintingStyle.stroke;
-    _selected.strokeWidth = 2.5;
-    _unselected.strokeWidth = 1.0;
+    _selectedPaint = Paint();
+    _unselectedPaint = Paint();
+    _editingPaint = Paint();
+    _selectedPaint.color = Colors.blue;
+    _unselectedPaint.color = Colors.yellow;
+    _editingPaint.color = Colors.red;
+    _editingPaint.style = _unselectedPaint.style = _selectedPaint.style
+    = PaintingStyle.stroke;
+    _selectedPaint.strokeWidth = 2.5;
+    _editingPaint.strokeWidth = _unselectedPaint.strokeWidth = 1.0;
+
   }
 
   /// Show the Delete Dialog
@@ -100,18 +106,28 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   }
 
-  // Toggle Show Data
+  /// Toggle [_showData]
   void _showImageData() {
-    print(-widget.data?.rect["y"] + (widget.data?.rect["h"] * 1.45));
     setState(() {
       _showData = !_showData;
     });
   }
-  
+
+  /// Toggle [_editMode]
+  void _toggleEditMode() {
+    setState(() {
+      _editMode = !_editMode;
+      _showData = false;
+    });
+  }
+
+  /// Get the Screen Size of the Device using [context]
   Size _screenSize(BuildContext context) {
     return MediaQuery.of(context).size;
   }
 
+  /// Determine the best place on the screen to display the data of
+  /// the detected object
   Alignment _determineAlignment() {
 
     if(widget.data?.rect == null) {
@@ -140,6 +156,109 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   }
 
+  ///Determine what paint to use
+  Paint _determinePaint() {
+    if(_editMode) {
+      return _editingPaint;
+    } else if(_showData) {
+      return _selectedPaint;
+    } else {
+      return _unselectedPaint;
+    }
+  }
+
+  /// Create buttons for editing mode
+  Widget _editModeButtons() {
+    return Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          FractionallySizedBox(
+            widthFactor: 0.85,
+            heightFactor: 0.1,
+            alignment: Alignment.bottomCenter,
+            child: Stack(
+              children: <Widget> [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    child: Icon(Icons.check),
+                    onPressed: () => _toggleEditMode(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ]
+    );
+  }
+
+  /// Create the buttons for the main Classify Page
+  Widget _classifyButtons() {
+    return Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          FractionallySizedBox(
+            widthFactor: 0.85,
+            heightFactor: 0.1,
+            alignment: Alignment.topCenter,
+            child: Stack(
+              children: <Widget> [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: Icon(MdiIcons.imageEditOutline),
+                    onPressed: () => _toggleEditMode(),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: IconButton(
+                    icon: Icon(Icons.share),
+                    onPressed: () => _shareImage(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          FractionallySizedBox(
+            widthFactor: 0.85,
+            heightFactor: 0.1,
+            alignment: Alignment.bottomCenter,
+            child: Stack(
+              children: <Widget> [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: FloatingActionButton(
+                    backgroundColor: Colors.red,
+                    heroTag: null,
+                    child: Icon(Icons.delete_forever),
+                    onPressed: () => _showDeleteDialog(context),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
+                    onPressed: () => {},
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: FloatingActionButton(
+                    heroTag: null,
+                    child: Icon(Icons.check),
+                    onPressed: () => _saveImage(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ]
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -166,7 +285,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                           painter: DetectDraw(
                             widget.data?.rect,
                             _screenSize(context),
-                            _showData ? _selected : _unselected
+                            _determinePaint()
                           ),
                         ),
                       ),
@@ -227,68 +346,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
       ),
       floatingActionButton: SafeArea(
         minimum: MediaQuery.of(context).padding,
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            FractionallySizedBox(
-              widthFactor: 0.85,
-              heightFactor: 0.1,
-              alignment: Alignment.topCenter,
-              child: Stack(
-                children: <Widget> [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: Icon(MdiIcons.imageEditOutline),
-                      onPressed: () => {},
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: IconButton(
-                      icon: Icon(Icons.share),
-                      onPressed: () => _shareImage(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            FractionallySizedBox(
-              widthFactor: 0.85,
-              heightFactor: 0.1,
-              alignment: Alignment.bottomCenter,
-              child: Stack(
-                children: <Widget> [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: FloatingActionButton(
-                      backgroundColor: Colors.red,
-                      heroTag: null,
-                      child: Icon(Icons.delete_forever),
-                      onPressed: () => _showDeleteDialog(context),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.center,
-                    child: FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
-                      onPressed: () => {},
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: FloatingActionButton(
-                      heroTag: null,
-                      child: Icon(Icons.check),
-                      onPressed: () => _saveImage(context),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ]
-        ),
+        child: _editMode ? _editModeButtons() : _classifyButtons(),
       ),
     );
   }
