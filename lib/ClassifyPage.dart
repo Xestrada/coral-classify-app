@@ -121,6 +121,19 @@ class _ClassifyPageState extends State<ClassifyPage> {
     });
   }
 
+  /// Manage dragging of detection box
+  void _manageDrag(DragUpdateDetails details) {
+    if (details.delta.dx > 0)
+      print("Dragging in +X direction");
+    else
+      print("Dragging in -X direction");
+
+    if (details.delta.dy > 0)
+      print("Dragging in +Y direction");
+    else
+      print("Dragging in -Y direction");
+  }
+
   /// Get the Screen Size of the Device using [context]
   Size _screenSize(BuildContext context) {
     return MediaQuery.of(context).size;
@@ -281,6 +294,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       width: _screenSize(context).width,
                       child: GestureDetector(
                         onTap: () => _showImageData(),
+                        onPanUpdate: (details) => _manageDrag(details),
                         child: CustomPaint(
                           painter: DetectDraw(
                             widget.data?.rect,
