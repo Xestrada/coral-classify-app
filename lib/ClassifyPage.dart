@@ -114,6 +114,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   /// Toggle [_showData]
   void _showImageData() {
+    print(_data.rect["y"] + _data.rect["h"] + 100/_screenSize(context).height);
     setState(() {
       _showData = !_showData;
     });
@@ -173,26 +174,31 @@ class _ClassifyPageState extends State<ClassifyPage> {
   Alignment _determineAlignment() {
 
     if(_data?.rect == null) {
-      return Alignment(0, 0);
-    } else if(-_data?.rect["x"] + (_data?.rect["w"] * 2.8) < 1.0) {
-      return Alignment(
-          -_data?.rect["x"] + (_data?.rect["w"] * 2.8),
-          -_data?.rect["y"]
-      );
-    } else if(-_data?.rect["x"] - (_data?.rect["w"] * 3.1) > -1.0) {
-      return Alignment(
-          -_data?.rect["x"] - (_data?.rect["w"] * 3.1),
-          -_data?.rect["y"]
-      );
-    } else if(-_data?.rect["y"] + (_data?.rect["h"] * 1.45) < 1.0) {
-      return Alignment(
-        -_data?.rect["x"],
-        -_data?.rect["y"] + (_data?.rect["h"] * 1.45)
-      );
+      return Alignment.center;
+    } else if(_data.rect["y"] - 100/_screenSize(context).height > 0) {
+        return FractionalOffset(
+          _data?.rect["x"] + (_data?.rect["w"]/2.0),
+          _data.rect["y"] - 100/_screenSize(context).height
+        );
+    } else if(_data.rect["y"] + _data.rect["h"] + 100/_screenSize(context).height < 1.0) {
+        return FractionalOffset(
+          _data?.rect["x"] + (_data?.rect["w"]/2.0),
+          _data.rect["y"] + _data.rect["h"] + 100/_screenSize(context).height
+        );
+    } else if(_data.rect["x"] + _data.rect["w"] + 250.0/_screenSize(context).width < 1.0) {
+        return FractionalOffset(
+          _data.rect["x"] + _data.rect["w"] + 250.0/_screenSize(context).width,
+          _data?.rect["y"] + (_data?.rect["h"]/2.0)
+        );
+    } else if (_data.rect["x"] - 230.0/_screenSize(context).width > 0){
+        return FractionalOffset(
+          _data.rect["x"] - 230.0/_screenSize(context).width,
+          _data?.rect["y"] + (_data?.rect["h"]/2.0)
+        );
     } else {
-      return Alignment(
-        -_data?.rect["x"],
-        -_data?.rect["y"] - (_data?.rect["h"] * 1.56)
+      return FractionalOffset(
+          _data.rect["x"] + (_data?.rect["w"]/2.0),
+          _data?.rect["y"] + (_data?.rect["h"]/2.0)
       );
     }
 
@@ -397,7 +403,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                         height: _showData ? 100 : 0,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         child: RichText(
                           text: TextSpan(
