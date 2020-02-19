@@ -23,6 +23,7 @@ class ClassifyPage extends StatefulWidget {
 class _ClassifyPageState extends State<ClassifyPage> {
 
   DetectedData _data;
+  Map _editingRect;
   Paint _unselectedPaint, _selectedPaint, _editingPaint;
   bool _showData;
   bool _editMode;
@@ -45,9 +46,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _selectedPaint.strokeWidth = 2.5;
     _unselectedPaint.strokeWidth = 1.0;
     //Create modifiable data
+    _editingRect = Map.from(widget.data.rect);
     _data = widget.data;
-
-
   }
 
   /// Show the Delete Dialog
@@ -114,7 +114,6 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   /// Toggle [_showData]
   void _showImageData() {
-    print(_data.rect["y"] + _data.rect["h"] + 100/_screenSize(context).height);
     setState(() {
       _showData = !_showData;
     });
@@ -130,38 +129,56 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   /// Manage dragging of detection box
   void _moveRectDrag(DragUpdateDetails details, BuildContext context) {
-    double tempX = _data.rect["x"] + (details.delta.dx/_screenSize(context).width);
-    double tempY = _data.rect["y"] + (details.delta.dy/_screenSize(context).height);
+    double tempX = _editingRect["x"] + (details.delta.dx/_screenSize(context).width);
+    double tempY = _editingRect["y"] + (details.delta.dy/_screenSize(context).height);
     setState(() {
-      _data.rect["x"] = tempX;
-      _data.rect["y"] = tempY;
+      _editingRect["x"] = tempX;
+      _editingRect["y"] = tempY;
     });
   }
 
+  /// Resize Detected Object
   void _resizeRect(DragUpdateDetails details, bool xDir, bool positive) {
+
     if(xDir){
-      double posX = _data.rect["x"];
-      double width = _data.rect["w"];
+
+      double posX = _editingRect["x"];
+      double width = _editingRect["w"];
       width = positive ? width + (details.delta.dx/_screenSize(context).width) :
           width - (details.delta.dx/_screenSize(context).width);
       posX = !positive ?
-        _data.rect["x"] + details.delta.dx/_screenSize(context).width : posX;
+        posX + details.delta.dx/_screenSize(context).width : posX;
       setState(() {
-        _data.rect["x"] = posX;
-        _data.rect["w"] = width;
+        _editingRect["x"] = posX;
+        _editingRect["w"] = width;
       });
+
     } else {
-      double posY = _data.rect["y"];
+
+      double height = _editingRect["h"];
+      double posY = _editingRect["y"];
       posY = !positive ?
         posY + details.delta.dy/_screenSize(context).height : posY;
-      double height = _data.rect["h"];
       height = positive ? height + (details.delta.dy/_screenSize(context).height) :
       height - (details.delta.dy/_screenSize(context).height);
       setState(() {
-        _data.rect["y"] = posY;
-        _data.rect["h"] = height;
+        _editingRect["y"] = posY;
+        _editingRect["h"] = height;
       });
+
     }
+
+  }
+
+  void _saveEditedRect(bool shouldSave) {
+    if(shouldSave) {
+      setState(() {
+        _data.rect = _editingRect;
+      });
+    } else {
+      _editingRect = Map.from(_data.rect);
+    }
+    _toggleEditMode();
   }
 
   /// Get the Screen Size of the Device using [context]
@@ -172,28 +189,31 @@ class _ClassifyPageState extends State<ClassifyPage> {
   /// Determine the best place on the screen to display the data of
   /// the detected object
   Alignment _determineAlignment() {
-
+    double x = _data?.rect["x"];
+    double y = _data?.rect["y"];
+    double h = _data?.rect["h"];
+    double w = _data?.rect["w"];
     if(_data?.rect == null) {
       return Alignment.center;
-    } else if(_data.rect["y"] - 100/_screenSize(context).height > 0) {
+    } else if(y - 100/_screenSize(context).height > 0) {
         return FractionalOffset(
-          _data?.rect["x"] + (_data?.rect["w"]/2.0),
-          _data.rect["y"] - 100/_screenSize(context).height
+          x + (w/2.0),
+          y - 100/_screenSize(context).height
         );
-    } else if(_data.rect["y"] + _data.rect["h"] + 100/_screenSize(context).height < 1.0) {
+    } else if(y + h + 100/_screenSize(context).height < 1.0) {
         return FractionalOffset(
-          _data?.rect["x"] + (_data?.rect["w"]/2.0),
-          _data.rect["y"] + _data.rect["h"] + 100/_screenSize(context).height
+          x + (w/2.0),
+          y + h + 100/_screenSize(context).height
         );
-    } else if(_data.rect["x"] + _data.rect["w"] + 250.0/_screenSize(context).width < 1.0) {
+    } else if(h + w + 250.0/_screenSize(context).width < 1.0) {
         return FractionalOffset(
-          _data.rect["x"] + _data.rect["w"] + 250.0/_screenSize(context).width,
-          _data?.rect["y"] + (_data?.rect["h"]/2.0)
+          x + w + 250.0/_screenSize(context).width,
+          y + (h/2.0)
         );
-    } else if (_data.rect["x"] - 230.0/_screenSize(context).width > 0){
+    } else if (x - 230.0/_screenSize(context).width > 0){
         return FractionalOffset(
-          _data.rect["x"] - 230.0/_screenSize(context).width,
-          _data?.rect["y"] + (_data?.rect["h"]/2.0)
+          x - 230.0/_screenSize(context).width,
+          y + (h/2.0)
         );
     } else {
       return FractionalOffset(
@@ -251,7 +271,17 @@ class _ClassifyPageState extends State<ClassifyPage> {
                   child: FloatingActionButton(
                     heroTag: null,
                     child: Icon(Icons.check),
-                    onPressed: () => _toggleEditMode(),
+                    onPressed: () => _saveEditedRect(true),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: MaterialButton(
+                    height: 55,
+                    color: Colors.red,
+                    child: Icon(Icons.close),
+                    shape: new CircleBorder(),
+                    onPressed: () => _saveEditedRect(false),
                   ),
                 ),
               ],
@@ -353,7 +383,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                           _moveRectDrag(details, context) : {},
                         child: CustomPaint(
                           painter: DetectDraw(
-                            _data?.rect,
+                            _editMode ? _editingRect : _data?.rect,
                             _screenSize(context),
                             _determinePaint()
                           ),
@@ -362,8 +392,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
                     ),
                     _resizeButton(
                       FractionalOffset(
-                        _data.rect["x"] + _data.rect["w"]/2.0,
-                        _data.rect["y"] - 20/_screenSize(context).height,
+                        _editingRect["x"] + _editingRect["w"]/2.0,
+                        _editingRect["y"] - 20/_screenSize(context).height,
                       ),
                       _resizeRect,
                       false,
@@ -371,8 +401,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
                     ),
                     _resizeButton(
                       FractionalOffset(
-                        _data.rect["x"] + _data.rect["w"]/2.0,
-                        _data.rect["y"] + _data.rect["h"] + 15/_screenSize(context).height,
+                        _editingRect["x"] + _editingRect["w"]/2.0,
+                        _editingRect["y"] + _editingRect["h"] + 15/_screenSize(context).height,
                       ),
                       _resizeRect,
                       false,
@@ -380,8 +410,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
                     ),
                     _resizeButton(
                       FractionalOffset(
-                        _data.rect["x"] - 20/_screenSize(context).width,
-                        _data.rect["y"] + _data.rect["h"]/2.0,
+                        _editingRect["x"] - 20/_screenSize(context).width,
+                        _editingRect["y"] + _editingRect["h"]/2.0,
                       ),
                       _resizeRect,
                       true,
@@ -389,8 +419,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
                     ),
                     _resizeButton(
                       FractionalOffset(
-                        _data.rect["x"] + _data.rect["w"] + 15/_screenSize(context).width,
-                        _data.rect["y"] + _data.rect["h"]/2.0,
+                        _editingRect["x"] + _editingRect["w"] + 15/_screenSize(context).width,
+                        _editingRect["y"] + _editingRect["h"]/2.0,
                       ),
                       _resizeRect,
                       true,
