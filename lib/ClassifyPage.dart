@@ -25,12 +25,14 @@ class _ClassifyPageState extends State<ClassifyPage> {
   DetectedData _data;
   Map _editingRect;
   Paint _unselectedPaint, _selectedPaint, _editingPaint;
+  double _buttonSize;
   bool _showData;
   bool _editMode;
 
   @override
   void initState() {
     super.initState();
+    _buttonSize = 55;
     _editMode = false;
     _showData = false;
     // Setup all Paints
@@ -268,16 +270,18 @@ class _ClassifyPageState extends State<ClassifyPage> {
               children: <Widget> [
                 Align(
                   alignment: Alignment.centerRight,
-                  child: FloatingActionButton(
-                    heroTag: null,
+                  child: MaterialButton(
+                    height: _buttonSize,
                     child: Icon(Icons.check),
+                    shape: new CircleBorder(),
+                    color: Colors.blue,
                     onPressed: () => _saveEditedRect(true),
                   ),
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: MaterialButton(
-                    height: 55,
+                    height: _buttonSize,
                     color: Colors.red,
                     child: Icon(Icons.close),
                     shape: new CircleBorder(),
@@ -327,26 +331,31 @@ class _ClassifyPageState extends State<ClassifyPage> {
               children: <Widget> [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: FloatingActionButton(
-                    backgroundColor: Colors.red,
-                    heroTag: null,
+                  child: MaterialButton(
+                    height: _buttonSize,
+                    color: Colors.red,
                     child: Icon(Icons.delete_forever),
+                    shape: new CircleBorder(),
                     onPressed: () => _showDeleteDialog(context),
                   ),
                 ),
                 Align(
                   alignment: Alignment.center,
-                  child: FloatingActionButton(
-                    heroTag: null,
+                  child: MaterialButton(
+                    height: _buttonSize,
+                    color: _showData ? Colors.blue : Colors.grey,
                     child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
+                    shape: new CircleBorder(),
                     onPressed: () => {},
                   ),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: FloatingActionButton(
-                    heroTag: null,
+                  child: MaterialButton(
+                    height: _buttonSize,
+                    color: Colors.blue,
                     child: Icon(Icons.check),
+                    shape: new CircleBorder(),
                     onPressed: () => _saveImage(context),
                   ),
                 ),
