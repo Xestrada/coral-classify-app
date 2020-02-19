@@ -342,7 +342,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       height: _screenSize(context).height,
                       width: _screenSize(context).width,
                       child: GestureDetector(
-                        onTap: () => _showImageData(),
+                        onTap: () => _editMode ? {} : _showImageData(),
                         onPanUpdate: (details) => _editMode ?
                           _moveRectDrag(details, context) : {},
                         child: CustomPaint(
