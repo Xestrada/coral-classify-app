@@ -137,6 +137,32 @@ class _ClassifyPageState extends State<ClassifyPage> {
     });
   }
 
+  void _resizeRect(DragUpdateDetails details, bool xDir, bool positive) {
+    if(xDir){
+      double posX = _data.rect["x"];
+      double width = _data.rect["w"];
+      width = positive ? width + (details.delta.dx/_screenSize(context).width) :
+          width - (details.delta.dx/_screenSize(context).width);
+      posX = !positive ?
+        _data.rect["x"] + details.delta.dx/_screenSize(context).width : posX;
+      setState(() {
+        _data.rect["x"] = posX;
+        _data.rect["w"] = width;
+      });
+    } else {
+      double posY = _data.rect["y"];
+      posY = !positive ?
+        posY + details.delta.dy/_screenSize(context).height : posY;
+      double height = _data.rect["h"];
+      height = positive ? height + (details.delta.dy/_screenSize(context).height) :
+      height - (details.delta.dy/_screenSize(context).height);
+      setState(() {
+        _data.rect["y"] = posY;
+        _data.rect["h"] = height;
+      });
+    }
+  }
+
   /// Get the Screen Size of the Device using [context]
   Size _screenSize(BuildContext context) {
     return MediaQuery.of(context).size;
@@ -184,17 +210,20 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   /// Button Allowing for Modification of the detected object rect
-  Widget _editShapeButton(Alignment align) {
+  Widget _resizeButton(Alignment align, Function f, bool x, bool pos) {
     return Align(
       alignment: align,
-      child: Container(
-        height: _editMode ? 40.0 : 0,
-        width: _editMode ? 40.0 : 0,
-        child: RawMaterialButton(
-          onPressed: () {},
-          shape: new CircleBorder(),
-          elevation: 2.0,
-          fillColor: Colors.white,
+      child: GestureDetector(
+        onPanUpdate: (details) => f(details, x, pos),
+        child: Container(
+          height: _editMode ? 40.0 : 0,
+          width: _editMode ? 40.0 : 0,
+          child: RawMaterialButton(
+            onPressed: () {},
+            shape: new CircleBorder(),
+            elevation: 2.0,
+            fillColor: Colors.white,
+          ),
         ),
       ),
     );
@@ -325,29 +354,41 @@ class _ClassifyPageState extends State<ClassifyPage> {
                         ),
                       ),
                     ),
-                    _editShapeButton(
+                    _resizeButton(
                       FractionalOffset(
                         _data.rect["x"] + _data.rect["w"]/2.0,
                         _data.rect["y"] - 20/_screenSize(context).height,
                       ),
+                      _resizeRect,
+                      false,
+                      false,
                     ),
-                    _editShapeButton(
+                    _resizeButton(
                       FractionalOffset(
                         _data.rect["x"] + _data.rect["w"]/2.0,
                         _data.rect["y"] + _data.rect["h"] + 15/_screenSize(context).height,
                       ),
+                      _resizeRect,
+                      false,
+                      true
                     ),
-                    _editShapeButton(
+                    _resizeButton(
                       FractionalOffset(
                         _data.rect["x"] - 20/_screenSize(context).width,
                         _data.rect["y"] + _data.rect["h"]/2.0,
                       ),
+                      _resizeRect,
+                      true,
+                      false,
                     ),
-                    _editShapeButton(
+                    _resizeButton(
                       FractionalOffset(
                         _data.rect["x"] + _data.rect["w"] + 15/_screenSize(context).width,
                         _data.rect["y"] + _data.rect["h"]/2.0,
                       ),
+                      _resizeRect,
+                      true,
+                      true
                     ),
                     Align(
                       alignment: _determineAlignment(),
