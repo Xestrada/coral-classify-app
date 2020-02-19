@@ -1,40 +1,24 @@
 import 'package:flutter/material.dart';
 
 class DetectDraw extends CustomPainter {
+
+  Paint customPaint;
+  Size screenSize;
   Map rect;
-  String objectName;
-  double prob;
-  DetectDraw(this.rect, this.objectName, this.prob);
+  DetectDraw(this.rect, this.screenSize, this.customPaint);
 
   @override
   void paint(Canvas canvas, Size size) {
 
     if(rect != null) {
       // Draw Rectangle Surrounding Object
-      final paint = Paint();
-      paint.color = Colors.yellow;
-      paint.style = PaintingStyle.stroke;
-      paint.strokeWidth = 2.0;
       double x, y, w, h;
       x = rect["x"] * size.width;
       y = rect["y"] * size.height;
-      w = rect["x"] * size.width;
-      h = rect["x"] * size.height;
-      Rect rect1 = Offset(x, y) & Size(w, h);
-      canvas.drawRect(rect1, paint);
-
-      // Draw Text describing Object
-      TextSpan span = new TextSpan(
-        style: new TextStyle(color: Colors.white),
-        text: (objectName + "\n" + (prob*100).toString() + "%"),
-      );
-      TextPainter tp = new TextPainter(
-        text: span,
-        textAlign: TextAlign.left,
-        textDirection: TextDirection.ltr,
-      );
-      tp.layout();
-      tp.paint(canvas, new Offset(x, y));
+      w = rect["w"] * size.width;
+      h = rect["h"] * size.height;
+      Rect drawRect = Offset(x, y) & Size(w, h);
+      canvas.drawRect(drawRect, customPaint);
 
     }
 
@@ -42,5 +26,19 @@ class DetectDraw extends CustomPainter {
 
   @override
   bool shouldRepaint(DetectDraw old) => old.rect != rect;
+
+  @override
+  bool hitTest(Offset offset) {
+    Path path = Path();
+    double x, y, w, h;
+    x = rect["x"] * screenSize.width;
+    y = rect["y"] * screenSize.height;
+    w = rect["w"] * screenSize.width;
+    h = rect["h"] * screenSize.height;
+    Rect drawRect = Offset(x, y) & Size(w, h);
+    path.addRect(drawRect);
+    path.close();
+    return path.contains(offset);
+  }
 
 }

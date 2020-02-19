@@ -15,13 +15,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.39.4"
-  animated_card:
-    dependency: "direct main"
-    description:
-      name: animated_card
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.0.0+8"
   archive:
     dependency: transitive
     description:
@@ -249,6 +242,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.4"
+  image_gallery_saver:
+    dependency: "direct main"
+    description:
+      name: image_gallery_saver
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.2"
   io:
     dependency: transitive
     description:
@@ -403,6 +403,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.5"
+  share_extend:
+    dependency: "direct main"
+    description:
+      name: share_extend
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.1.1"
   shelf:
     dependency: transitive
     description:

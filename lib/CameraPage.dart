@@ -22,6 +22,8 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
 
+  /// Used to style the rectangle around the detected object
+  Paint _customPaint;
   /// Used to control the camera
   CameraController _camControl;
   /// Used to initialize the camera
@@ -47,6 +49,12 @@ class _CameraPageState extends State<CameraPage> {
     _shouldImageStream = true;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+
+    // Set up Paint
+    _customPaint = Paint();
+    _customPaint.color = Colors.yellow;
+    _customPaint.style = PaintingStyle.stroke;
+    _customPaint.strokeWidth = 2.0;
 
     // Setup Camera Control
     _camControl = CameraController(widget.cameras.first, ResolutionPreset.high, enableAudio: false);
@@ -264,8 +272,8 @@ class _CameraPageState extends State<CameraPage> {
                                       painter:
                                       DetectDraw(
                                         _currentRect,
-                                        _currentCoralType,
-                                        _currentProb,
+                                        MediaQuery.of(context).size,
+                                        _customPaint
                                       )
                                   ),
                                 ]
