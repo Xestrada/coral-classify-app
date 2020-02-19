@@ -128,7 +128,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   /// Manage dragging of detection box
-  void _manageDrag(DragUpdateDetails details, BuildContext context) {
+  void _moveRectDrag(DragUpdateDetails details, BuildContext context) {
     double tempX = _data.rect["x"] + (details.delta.dx/_screenSize(context).width);
     double tempY = _data.rect["y"] + (details.delta.dy/_screenSize(context).height);
     setState(() {
@@ -181,6 +181,23 @@ class _ClassifyPageState extends State<ClassifyPage> {
     } else {
       return _unselectedPaint;
     }
+  }
+
+  /// Button Allowing for Modification of the detected object rect
+  Widget _editShapeButton(Alignment align) {
+    return Align(
+      alignment: align,
+      child: Container(
+        height: _editMode ? 40.0 : 0,
+        width: _editMode ? 40.0 : 0,
+        child: RawMaterialButton(
+          onPressed: () {},
+          shape: new CircleBorder(),
+          elevation: 2.0,
+          fillColor: Colors.white,
+        ),
+      ),
+    );
   }
 
   /// Create buttons for editing mode
@@ -297,7 +314,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       width: _screenSize(context).width,
                       child: GestureDetector(
                         onTap: () => _showImageData(),
-                        onPanUpdate: (details) => _editMode ? _manageDrag(details, context) : {},
+                        onPanUpdate: (details) => _editMode ?
+                          _moveRectDrag(details, context) : {},
                         child: CustomPaint(
                           painter: DetectDraw(
                             _data?.rect,
@@ -305,6 +323,30 @@ class _ClassifyPageState extends State<ClassifyPage> {
                             _determinePaint()
                           ),
                         ),
+                      ),
+                    ),
+                    _editShapeButton(
+                      FractionalOffset(
+                        _data.rect["x"] + _data.rect["w"]/2.0,
+                        _data.rect["y"] - 20/_screenSize(context).height,
+                      ),
+                    ),
+                    _editShapeButton(
+                      FractionalOffset(
+                        _data.rect["x"] + _data.rect["w"]/2.0,
+                        _data.rect["y"] + _data.rect["h"] + 15/_screenSize(context).height,
+                      ),
+                    ),
+                    _editShapeButton(
+                      FractionalOffset(
+                        _data.rect["x"] - 20/_screenSize(context).width,
+                        _data.rect["y"] + _data.rect["h"]/2.0,
+                      ),
+                    ),
+                    _editShapeButton(
+                      FractionalOffset(
+                        _data.rect["x"] + _data.rect["w"] + 15/_screenSize(context).width,
+                        _data.rect["y"] + _data.rect["h"]/2.0,
                       ),
                     ),
                     Align(
