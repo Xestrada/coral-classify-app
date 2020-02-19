@@ -4,10 +4,10 @@ part 'DetectedData.g.dart';
 
 @JsonSerializable()
 class DetectedData {
-  final Map rect;
+  Map rect;
   final String detectedClass;
   final double prob;
-  const DetectedData({this.rect, this.detectedClass, this.prob});
+  DetectedData({this.rect, this.detectedClass, this.prob});
   factory DetectedData.fromJson(Map<String, dynamic> json) => _$DetectedDataFromJson(json);
   Map<String, dynamic> toJson() => _$DetectedDataToJson(this);
 }

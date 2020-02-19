@@ -11,9 +11,9 @@ class ClassifyPage extends StatefulWidget {
   final String path;
 
   /// Will follow order: [Map, String, double]. Data can be null
-  DetectedData data;
+  final DetectedData data;
 
-  ClassifyPage({Key key, @required this.path, this.data}) : super(key: key);
+  const ClassifyPage({Key key, @required this.path, this.data}) : super(key: key);
 
   @override
   _ClassifyPageState createState() => _ClassifyPageState();
@@ -22,6 +22,7 @@ class ClassifyPage extends StatefulWidget {
 
 class _ClassifyPageState extends State<ClassifyPage> {
 
+  DetectedData _data;
   Paint _unselectedPaint, _selectedPaint, _editingPaint;
   bool _showData;
   bool _editMode;
@@ -31,6 +32,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     super.initState();
     _editMode = false;
     _showData = false;
+    // Setup all Paints
     _selectedPaint = Paint();
     _unselectedPaint = Paint();
     _editingPaint = Paint();
@@ -39,8 +41,12 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _editingPaint.color = Colors.red;
     _editingPaint.style = _unselectedPaint.style = _selectedPaint.style
     = PaintingStyle.stroke;
+    _editingPaint.strokeWidth = 3.0;
     _selectedPaint.strokeWidth = 2.5;
-    _editingPaint.strokeWidth = _unselectedPaint.strokeWidth = 1.0;
+    _unselectedPaint.strokeWidth = 1.0;
+    //Create modifiable data
+    _data = widget.data;
+
 
   }
 
@@ -75,9 +81,9 @@ class _ClassifyPageState extends State<ClassifyPage> {
   /// Save the Image and any Detected Data
   void _saveImage(BuildContext context) async {
     final String jsonPath = "${widget.path.substring(0, widget.path.length - 4)}.json";
-    Map<String, dynamic> _storableData = (widget.data == null)
+    Map<String, dynamic> _storableData = (_data == null)
         ? DetectedData(rect: null, detectedClass: null, prob: null).toJson() :
-        widget.data.toJson();
+        _data.toJson();
     File jsonFile = File(jsonPath);
     jsonFile.writeAsString(jsonEncode(_storableData));
     Navigator.pop(context);
@@ -122,16 +128,13 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   /// Manage dragging of detection box
-  void _manageDrag(DragUpdateDetails details) {
-    if (details.delta.dx > 0)
-      print("Dragging in +X direction");
-    else
-      print("Dragging in -X direction");
-
-    if (details.delta.dy > 0)
-      print("Dragging in +Y direction");
-    else
-      print("Dragging in -Y direction");
+  void _manageDrag(DragUpdateDetails details, BuildContext context) {
+    double tempX = _data.rect["x"] + (details.delta.dx/_screenSize(context).width);
+    double tempY = _data.rect["y"] + (details.delta.dy/_screenSize(context).height);
+    setState(() {
+      _data.rect["x"] = tempX;
+      _data.rect["y"] = tempY;
+    });
   }
 
   /// Get the Screen Size of the Device using [context]
@@ -143,27 +146,27 @@ class _ClassifyPageState extends State<ClassifyPage> {
   /// the detected object
   Alignment _determineAlignment() {
 
-    if(widget.data?.rect == null) {
+    if(_data?.rect == null) {
       return Alignment(0, 0);
-    } else if(-widget.data?.rect["x"] + (widget.data?.rect["w"] * 2.8) < 1.0) {
+    } else if(-_data?.rect["x"] + (_data?.rect["w"] * 2.8) < 1.0) {
       return Alignment(
-          -widget.data?.rect["x"] + (widget.data?.rect["w"] * 2.8),
-          -widget.data?.rect["y"]
+          -_data?.rect["x"] + (_data?.rect["w"] * 2.8),
+          -_data?.rect["y"]
       );
-    } else if(-widget.data?.rect["x"] - (widget.data?.rect["w"] * 3.1) > -1.0) {
+    } else if(-_data?.rect["x"] - (_data?.rect["w"] * 3.1) > -1.0) {
       return Alignment(
-          -widget.data?.rect["x"] - (widget.data?.rect["w"] * 3.1),
-          -widget.data?.rect["y"]
+          -_data?.rect["x"] - (_data?.rect["w"] * 3.1),
+          -_data?.rect["y"]
       );
-    } else if(-widget.data?.rect["y"] + (widget.data?.rect["h"] * 1.45) < 1.0) {
+    } else if(-_data?.rect["y"] + (_data?.rect["h"] * 1.45) < 1.0) {
       return Alignment(
-        -widget.data?.rect["x"],
-        -widget.data?.rect["y"] + (widget.data?.rect["h"] * 1.45)
+        -_data?.rect["x"],
+        -_data?.rect["y"] + (_data?.rect["h"] * 1.45)
       );
     } else {
       return Alignment(
-        -widget.data?.rect["x"],
-        -widget.data?.rect["y"] - (widget.data?.rect["h"] * 1.56)
+        -_data?.rect["x"],
+        -_data?.rect["y"] - (_data?.rect["h"] * 1.56)
       );
     }
 
@@ -294,10 +297,10 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       width: _screenSize(context).width,
                       child: GestureDetector(
                         onTap: () => _showImageData(),
-                        onPanUpdate: (details) => _manageDrag(details),
+                        onPanUpdate: (details) => _editMode ? _manageDrag(details, context) : {},
                         child: CustomPaint(
                           painter: DetectDraw(
-                            widget.data?.rect,
+                            _data?.rect,
                             _screenSize(context),
                             _determinePaint()
                           ),
@@ -334,7 +337,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                                   decoration: TextDecoration.underline,
                                   fontWeight: FontWeight.bold,
                                 ),
-                                text: '${widget.data?.detectedClass}\n',
+                                text: '${_data?.detectedClass}\n',
                               ),
                               TextSpan(
                                 text: 'Confidence: ',
@@ -344,7 +347,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                                   decoration: TextDecoration.underline,
                                   fontWeight: FontWeight.bold,
                                 ),
-                                text: '${((widget.data?.prob ?? 1)*10000).floor()/100}',
+                                text: '${((_data?.prob ?? 1)*10000).floor()/100}',
                               ),
                             ],
                           ),
