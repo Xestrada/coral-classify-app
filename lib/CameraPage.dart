@@ -126,9 +126,11 @@ class _CameraPageState extends State<CameraPage> {
       );
       _isDetecting = false;
       setState(() {
-        _currentRect = results[0][0];
-        _currentCoralType = results[0][1];
-        _currentProb = results[0][2];
+        if(_shouldImageStream) {
+          _currentRect = results[0][0];
+          _currentCoralType = results[0][1];
+          _currentProb = results[0][2];
+        }
       });
     }
   }
@@ -210,6 +212,8 @@ class _CameraPageState extends State<CameraPage> {
     //Toggle state
     setState(() {
       _shouldImageStream = !_shouldImageStream;
+      _currentRect = null;
+      _savedRect = null;
     });
     // Set Camera depending on state
     if(_shouldImageStream) {
