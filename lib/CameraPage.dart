@@ -34,6 +34,8 @@ class _CameraPageState extends State<CameraPage> {
   String _currentCoralType, _savedCoralType;
   /// Confidence that it is the type of Coral
   double _currentProb, _savedProb;
+  ///Size of Buttons
+  double _buttonSize;
   /// Flag determining when a coral is being detected
   bool _isDetecting;
   /// Flag Determining if an ImageStream is running
@@ -45,6 +47,7 @@ class _CameraPageState extends State<CameraPage> {
   void initState() {
 
     super.initState();
+    _buttonSize = 55.0;
     _isDetecting = false;
     _shouldImageStream = true;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
@@ -306,25 +309,31 @@ class _CameraPageState extends State<CameraPage> {
             children: <Widget> [
               Align(
                 alignment: Alignment.centerLeft,
-                child: FloatingActionButton(
-                  heroTag: null,
+                child: MaterialButton(
+                  color: Colors.blue,
+                  shape: CircleBorder(),
+                  height: _buttonSize,
                   child: Icon(_shouldImageStream ? MdiIcons.eye : MdiIcons.eyeOff),
                   onPressed: () => _toggleImageStream(),
                 ),
               ),
               Align(
                 alignment: Alignment.center,
-                child: FloatingActionButton(
-                  heroTag: null,
+                child: MaterialButton(
+                  color: Colors.blue,
+                  shape: CircleBorder(),
                   child: Icon(Icons.camera_alt),
+                  height: _buttonSize,
                   onPressed: () => _takePicture(context),
                 ),
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: FloatingActionButton(
-                  heroTag: null,
+                child: MaterialButton(
+                  color: Colors.blue,
+                  shape: CircleBorder(),
                   child: Icon(Icons.photo_album),
+                  height: _buttonSize,
                   onPressed: () => _goToGallery(context),
                 ),
               ),
