@@ -132,6 +132,10 @@ class _ClassifyPageState extends State<ClassifyPage> {
     setState(() {
       _editMode = !_editMode;
       _showData = false;
+      if(_editingRect["w"] == 0 && _editingRect["h"] == 0) {
+        _editingRect["w"] = 0.5;
+        _editingRect["h"] = 0.5;
+      }
     });
   }
 
@@ -471,7 +475,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                                   decoration: TextDecoration.underline,
                                   fontWeight: FontWeight.bold,
                                 ),
-                                text: '${_data?.detectedClass}\n',
+                                text: '${_data?.detectedClass ?? "N/A"}\n',
                               ),
                               TextSpan(
                                 text: 'Confidence: ',
