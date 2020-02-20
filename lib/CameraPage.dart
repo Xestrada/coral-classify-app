@@ -88,46 +88,6 @@ class _CameraPageState extends State<CameraPage> {
     );
   }
 
-  /// Find Corals in [image]
-  Future<List> _findCorals(CameraImage image) async {
-
-    List resultList = await Tflite.detectObjectOnFrame(
-      bytesList: image.planes.map((plane) {
-        return plane.bytes;
-      }).toList(),
-      model: "SSDMobileNet",
-      imageHeight: image.height,
-      imageWidth: image.width,
-      imageMean: 127.5,
-      imageStd: 127.5,
-      threshold: 0.2,
-
-    );
-
-    List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
-    Map biggestRect; // Biggest Rect of detected Object
-    double maxProb = 0.0;
-    String objectType; // Detected Object name
-    double prob; // Confidence in Class
-
-    if(resultList != null) {
-      for (var item in resultList) {
-        if (possibleCoral.contains(item["detectedClass"])) {
-          // Choose Object with greatest confidence
-          if (item["confidenceInClass"] > maxProb) {
-            biggestRect = item["rect"];
-            objectType = item["detectedClass"];
-            maxProb = prob = item["confidenceInClass"];
-          }
-        }
-      }
-    }
-
-    // Return Map of rectangle, type of detected Object, and confidence
-    return [biggestRect, objectType, prob];
-
-  }
-
   /// Process [image] through TensorFlow model
   void _processCameraImage(CameraImage image) async {
     if(!_isDetecting) {
@@ -177,7 +137,7 @@ class _CameraPageState extends State<CameraPage> {
       await _camControl.takePicture(_saveDir);
 
       // Go to ClassifyPage only if no CameraError
-      _goToClassifyPage(context, _saveDir);
+      await _goToClassifyPage(context, _saveDir);
       //Restart ImageStream
       await _enableImageStream();
 
@@ -190,7 +150,7 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   /// Go to ClassifyPage while opening image at [path]
-  void _goToClassifyPage(BuildContext context, String path) async {
+  Future<void> _goToClassifyPage(BuildContext context, String path) async {
     await Navigator.push(
         context,
         MaterialPageRoute(
@@ -237,6 +197,46 @@ class _CameraPageState extends State<CameraPage> {
       await _camControl.stopImageStream();
       _isImageStreaming = false;
     }
+  }
+
+  /// Find Corals in [image]
+  Future<List> _findCorals(CameraImage image) async {
+
+    List resultList = await Tflite.detectObjectOnFrame(
+      bytesList: image.planes.map((plane) {
+        return plane.bytes;
+      }).toList(),
+      model: "SSDMobileNet",
+      imageHeight: image.height,
+      imageWidth: image.width,
+      imageMean: 127.5,
+      imageStd: 127.5,
+      threshold: 0.2,
+
+    );
+
+    List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
+    Map biggestRect; // Biggest Rect of detected Object
+    double maxProb = 0.0;
+    String objectType; // Detected Object name
+    double prob; // Confidence in Class
+
+    if(resultList != null) {
+      for (var item in resultList) {
+        if (possibleCoral.contains(item["detectedClass"])) {
+          // Choose Object with greatest confidence
+          if (item["confidenceInClass"] > maxProb) {
+            biggestRect = item["rect"];
+            objectType = item["detectedClass"];
+            maxProb = prob = item["confidenceInClass"];
+          }
+        }
+      }
+    }
+
+    // Return Map of rectangle, type of detected Object, and confidence
+    return [biggestRect, objectType, prob];
+
   }
 
   /// Disable the ImageStream
