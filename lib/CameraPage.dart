@@ -59,6 +59,9 @@ class _CameraPageState extends State<CameraPage> {
     _customPaint.style = PaintingStyle.stroke;
     _customPaint.strokeWidth = 2.0;
 
+    //Load Tflite Model
+    _loadModel();
+
     // Setup Camera Control
     _camControl = CameraController(widget.cameras.first, ResolutionPreset.high, enableAudio: false);
     _camFuture = _camControl.initialize().then((_) async {
@@ -74,6 +77,15 @@ class _CameraPageState extends State<CameraPage> {
   void dispose() {
     _camControl?.dispose();
     super.dispose();
+  }
+
+  /// Load Tflite Model
+  void _loadModel() async {
+    await Tflite.loadModel(
+      model: "assets/ssd_mobilenet.tflite",
+      labels: "assets/ssd_mobilenet.txt",
+      numThreads: 4,
+    );
   }
 
   /// Find Corals in [image]
