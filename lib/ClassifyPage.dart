@@ -182,6 +182,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   }
 
+  /// Either save edited rect size and location to [_data.rect] or
+  /// set [_editingRect] to copy of [_data.rect]
   void _saveEditedRect(bool shouldSave) {
     if(shouldSave) {
       setState(() {
