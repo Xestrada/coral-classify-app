@@ -269,48 +269,36 @@ class _CameraPageState extends State<CameraPage> {
                 child: AspectRatio(
                   aspectRatio: 10,
                   child: FutureBuilder<void>(
-                      future: _camFuture,
-                      // ignore: missing_return
-                      builder: (context, snapshot) {
-                        switch(snapshot.connectionState) {
-                          case ConnectionState.waiting:
-                            {
-                              return Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            } break;
-                          case ConnectionState.active:
-                            continue done;
-                          done:
-                          case ConnectionState.done: {
-                            return Stack (
-                                fit: StackFit.expand,
-                                children: <Widget> [
-                                  CameraPreview(_camControl),
-                                  CustomPaint(
-                                      painter:
-                                      DetectDraw(
-                                        _currentRect,
-                                        MediaQuery.of(context).size,
-                                        _customPaint
-                                      )
-                                  ),
-                                ]
-                            );
-                          } break;
-                          case ConnectionState.none: {
-                            continue def;
-                          }
-                          def:
-                          default: {
-                            return Center(
-                              child: Text(
-                                "Failed ot Initialize Cameras",
+                    future: _camFuture,
+                    builder: (context, snapshot) {
+                      if(snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if(snapshot.connectionState == ConnectionState.active
+                        || snapshot.connectionState == ConnectionState.done) {
+                        return Stack (
+                            fit: StackFit.expand,
+                            children: <Widget> [
+                              CameraPreview(_camControl),
+                              CustomPaint(
+                                  painter:
+                                  DetectDraw(
+                                      _currentRect,
+                                      MediaQuery.of(context).size,
+                                      _customPaint
+                                  )
                               ),
-                            );
-                          }
-                        }
+                            ]
+                        );
+                      } else {
+                        return Center(
+                          child: Text(
+                            "Failed ot Initialize Cameras",
+                          ),
+                        );
                       }
+                    }
                   ),
                 ),
               ),
