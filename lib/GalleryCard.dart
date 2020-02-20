@@ -17,12 +17,33 @@ class GalleryCard extends StatelessWidget {
         children: <Widget> [
           Expanded(
             flex: 2,
-            child: Image.file(File(imageFile.path)),
+            child: Container(
+              height: MediaQuery.of(context).size.height/3.5,
+              foregroundDecoration: BoxDecoration(
+                border: Border(
+                  right: BorderSide(
+                    color: Colors.white,
+                    width: 1.5,
+                  ),
+                ),
+                image: DecorationImage(
+                  fit: BoxFit.fitWidth,
+                  image: FileImage(
+                    File(imageFile.path),
+                    scale: 0.25,
+                  ),
+                ),
+              ),
+            ),
           ),
           Expanded(
             flex: 3,
-            child: Center(
-              child: Text(info)
+            child: Container(
+              alignment: Alignment.centerLeft,
+              padding: EdgeInsets.all(25.0),
+              child: Text(
+                  "○ $info"
+              )
             ),
           )
         ],
