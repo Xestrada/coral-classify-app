@@ -48,8 +48,14 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _selectedPaint.strokeWidth = 2.5;
     _unselectedPaint.strokeWidth = 1.0;
     //Create modifiable data
-    _editingRect = Map.from(widget.data.rect);
-    _data = widget.data;
+    _editingRect = widget.data?.rect == null
+        ? {"x":0.0, "y":0.0, "w":0.0, "h": 0.0} : Map.from(widget.data.rect);
+    _data = widget.data?.rect == null ?
+      DetectedData(
+        rect: {"x":0.0, "y":0.0, "w":0.0, "h": 0.0},
+        prob: 0,
+        detectedClass: null,
+      ) :  widget.data;
   }
 
   /// Show the Delete Dialog
