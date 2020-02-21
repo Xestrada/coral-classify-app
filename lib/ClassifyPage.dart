@@ -52,11 +52,11 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _editingRect = widget.data?.rect == null
         ? {"x":0.0, "y":0.0, "w":0.0, "h": 0.0} : Map.from(widget.data.rect);
     _data = widget.data?.rect == null ?
-      DetectedData(
-        rect: {"x":0.0, "y":0.0, "w":0.0, "h": 0.0},
-        prob: 0,
-        detectedClass: null,
-      ) :  widget.data;
+    DetectedData(
+      rect: {"x":0.0, "y":0.0, "w":0.0, "h": 0.0},
+      prob: 0,
+      detectedClass: null,
+    ) :  widget.data;
   }
 
   /// Show the Delete Dialog
@@ -92,7 +92,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     final String jsonPath = "${widget.path.substring(0, widget.path.length - 4)}.json";
     Map<String, dynamic> _storableData = (_data == null)
         ? DetectedData(rect: null, detectedClass: null, prob: null).toJson() :
-        _data.toJson();
+    _data.toJson();
     File jsonFile = File(jsonPath);
     jsonFile.writeAsString(jsonEncode(_storableData));
     Navigator.pop(context);
@@ -158,9 +158,9 @@ class _ClassifyPageState extends State<ClassifyPage> {
       double posX = _editingRect["x"];
       double width = _editingRect["w"];
       width = positive ? width + (details.delta.dx/_screenSize(context).width) :
-          width - (details.delta.dx/_screenSize(context).width);
+      width - (details.delta.dx/_screenSize(context).width);
       posX = !positive ?
-        posX + details.delta.dx/_screenSize(context).width : posX;
+      posX + details.delta.dx/_screenSize(context).width : posX;
       setState(() {
         _editingRect["x"] = posX;
         _editingRect["w"] = width;
@@ -171,7 +171,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
       double height = _editingRect["h"];
       double posY = _editingRect["y"];
       posY = !positive ?
-        posY + details.delta.dy/_screenSize(context).height : posY;
+      posY + details.delta.dy/_screenSize(context).height : posY;
       height = positive ? height + (details.delta.dy/_screenSize(context).height) :
       height - (details.delta.dy/_screenSize(context).height);
       setState(() {
@@ -212,25 +212,25 @@ class _ClassifyPageState extends State<ClassifyPage> {
     if(_data?.rect == null) {
       return Alignment.center;
     } else if(y - 100/_screenSize(context).height > 0) {
-        return FractionalOffset(
+      return FractionalOffset(
           x + (w/2.0),
           y - 100/_screenSize(context).height
-        );
+      );
     } else if(y + h + 100/_screenSize(context).height < 1.0) {
-        return FractionalOffset(
+      return FractionalOffset(
           x + (w/2.0),
           y + h + 100/_screenSize(context).height
-        );
+      );
     } else if(h + w + 250.0/_screenSize(context).width < 1.0) {
-        return FractionalOffset(
+      return FractionalOffset(
           x + w + 250.0/_screenSize(context).width,
           y + (h/2.0)
-        );
+      );
     } else if (x - 230.0/_screenSize(context).width > 0){
-        return FractionalOffset(
+      return FractionalOffset(
           x - 230.0/_screenSize(context).width,
           y + (h/2.0)
-        );
+      );
     } else {
       return FractionalOffset(
           _data.rect["x"] + (_data?.rect["w"]/2.0),
@@ -306,24 +306,6 @@ class _ClassifyPageState extends State<ClassifyPage> {
             ),
           ),
         ]
-    );
-  }
-
-  Widget _resizeWidget(double x, double y, Size screen, bool shouldPaint) {
-    return Container(
-      height: screen.height,
-      width: screen.width,
-      child: GestureDetector( // Detect Touch on the Resize Points
-        onPanUpdate: (details) => _editMode ? {} : {},
-        child: CustomPaint(
-          painter: ResizeDraw(
-              x,
-              y,
-              screen,
-              _editMode
-          ),
-        ),
-      ),
     );
   }
 
@@ -415,46 +397,22 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       alignment: Alignment.center,
                       child: Image.file(File(widget.path)),
                     ),
-                    Container( // Rectangle Surrounding Detected Object
+                    Container(
                       height: _screenSize(context).height,
                       width: _screenSize(context).width,
                       child: GestureDetector(
                         onTap: () => _editMode ? {} : _showImageData(),
                         onPanUpdate: (details) => _editMode ?
-                          _moveRectDrag(details, context) : {},
+                        _moveRectDrag(details, context) : {},
                         child: CustomPaint(
                           painter: DetectDraw(
-                            _editMode ? _editingRect : _data?.rect,
-                            _screenSize(context),
-                            _determinePaint()
+                              _editMode ? _editingRect : _data?.rect,
+                              _screenSize(context),
+                              _determinePaint()
                           ),
                         ),
                       ),
                     ),
-//                    _resizeWidget( // Top Resize Button
-//                        _editingRect["x"] + _editingRect["w"]/2.0,
-//                        _editingRect["y"],
-//                        _screenSize(context),
-//                        _editMode
-//                    ),
-//                    _resizeWidget( // Right Resize Button
-//                        _editingRect["x"] + _editingRect["w"],
-//                        _editingRect["y"] + _editingRect["h"]/2.0,
-//                        _screenSize(context),
-//                        _editMode
-//                    ),
-//                    _resizeWidget( // Bottom Resize Button
-//                        _editingRect["x"] + _editingRect["w"]/2.0,
-//                        _editingRect["y"] + _editingRect["h"],
-//                        _screenSize(context),
-//                        _editMode
-//                    ),
-//                    _resizeWidget( // Left Resize Button
-//                        _editingRect["x"],
-//                        _editingRect["y"] + _editingRect["h"]/2.0,
-//                        _screenSize(context),
-//                        _editMode
-//                    ),
                     _resizeButton(
                       FractionalOffset(
                         _editingRect["x"] + _editingRect["w"]/2.0,
@@ -465,13 +423,13 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       false,
                     ),
                     _resizeButton(
-                      FractionalOffset(
-                        _editingRect["x"] + _editingRect["w"]/2.0,
-                        _editingRect["y"] + _editingRect["h"] + 15/_screenSize(context).height,
-                      ),
-                      _resizeRect,
-                      false,
-                      true
+                        FractionalOffset(
+                          _editingRect["x"] + _editingRect["w"]/2.0,
+                          _editingRect["y"] + _editingRect["h"] + 15/_screenSize(context).height,
+                        ),
+                        _resizeRect,
+                        false,
+                        true
                     ),
                     _resizeButton(
                       FractionalOffset(
@@ -483,13 +441,13 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       false,
                     ),
                     _resizeButton(
-                      FractionalOffset(
-                        _editingRect["x"] + _editingRect["w"] + 15/_screenSize(context).width,
-                        _editingRect["y"] + _editingRect["h"]/2.0,
-                      ),
-                      _resizeRect,
-                      true,
-                      true
+                        FractionalOffset(
+                          _editingRect["x"] + _editingRect["w"] + 15/_screenSize(context).width,
+                          _editingRect["y"] + _editingRect["h"]/2.0,
+                        ),
+                        _resizeRect,
+                        true,
+                        true
                     ),
                     Align(
                       alignment: _determineAlignment(),
