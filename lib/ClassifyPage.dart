@@ -308,6 +308,24 @@ class _ClassifyPageState extends State<ClassifyPage> {
     );
   }
 
+  Widget _resizeWidget(double x, double y, Size screen, bool shouldPaint) {
+    return Container(
+      height: screen.height,
+      width: screen.width,
+      child: GestureDetector( // Detect Touch on the Resize Points
+        onPanUpdate: (details) => _editMode ? {} : {},
+        child: CustomPaint(
+          painter: ResizeDraw(
+              x,
+              y,
+              screen,
+              _editMode
+          ),
+        ),
+      ),
+    );
+  }
+
   /// Create the buttons for the main Classify Page
   Widget _classifyButtons() {
     return Stack(
@@ -396,10 +414,10 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       alignment: Alignment.center,
                       child: Image.file(File(widget.path)),
                     ),
-                    Container(
+                    Container( // Rectangle Surrounding Detected Object
                       height: _screenSize(context).height,
                       width: _screenSize(context).width,
-                      child: GestureDetector( // Detect Touch on the Rect around Detected Object
+                      child: GestureDetector(
                         onTap: () => _editMode ? {} : _showImageData(),
                         onPanUpdate: (details) => _editMode ?
                           _moveRectDrag(details, context) : {},
@@ -412,20 +430,30 @@ class _ClassifyPageState extends State<ClassifyPage> {
                         ),
                       ),
                     ),
-                    Container(
-                      height: _screenSize(context).height,
-                      width: _screenSize(context).width,
-                      child: GestureDetector( // Detect Touch on the Resize Points
-                        onPanUpdate: (details) => _editMode ? {} : {},
-                        child: CustomPaint(
-                          painter: ResizeDraw(
-                            _editMode ? _editingRect : _data?.rect,
-                            _screenSize(context),
-                            _editMode
-                          ),
-                        ),
-                      ),
-                    ),
+//                    _resizeWidget( // Top Resize Button
+//                        _editingRect["x"] + _editingRect["w"]/2.0,
+//                        _editingRect["y"],
+//                        _screenSize(context),
+//                        _editMode
+//                    ),
+//                    _resizeWidget( // Right Resize Button
+//                        _editingRect["x"] + _editingRect["w"],
+//                        _editingRect["y"] + _editingRect["h"]/2.0,
+//                        _screenSize(context),
+//                        _editMode
+//                    ),
+//                    _resizeWidget( // Bottom Resize Button
+//                        _editingRect["x"] + _editingRect["w"]/2.0,
+//                        _editingRect["y"] + _editingRect["h"],
+//                        _screenSize(context),
+//                        _editMode
+//                    ),
+//                    _resizeWidget( // Left Resize Button
+//                        _editingRect["x"],
+//                        _editingRect["y"] + _editingRect["h"]/2.0,
+//                        _screenSize(context),
+//                        _editMode
+//                    ),
                     _resizeButton(
                       FractionalOffset(
                         _editingRect["x"] + _editingRect["w"]/2.0,
