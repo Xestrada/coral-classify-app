@@ -11,6 +11,7 @@ class DetectDraw extends CustomPainter {
   void paint(Canvas canvas, Size size) {
 
     if(rect != null) {
+
       // Draw Rectangle Surrounding Object
       double x, y, w, h;
       x = rect["x"] * size.width;

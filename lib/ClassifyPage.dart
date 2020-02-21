@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:convert';
 import './DetectDraw.dart';
 import './DetectedData.dart';
+import './ResizeDraw.dart';
 
 class ClassifyPage extends StatefulWidget {
 
@@ -398,7 +399,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                     Container(
                       height: _screenSize(context).height,
                       width: _screenSize(context).width,
-                      child: GestureDetector(
+                      child: GestureDetector( // Detect Touch on the Rect around Detected Object
                         onTap: () => _editMode ? {} : _showImageData(),
                         onPanUpdate: (details) => _editMode ?
                           _moveRectDrag(details, context) : {},
@@ -407,6 +408,20 @@ class _ClassifyPageState extends State<ClassifyPage> {
                             _editMode ? _editingRect : _data?.rect,
                             _screenSize(context),
                             _determinePaint()
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      height: _screenSize(context).height,
+                      width: _screenSize(context).width,
+                      child: GestureDetector( // Detect Touch on the Resize Points
+                        onPanUpdate: (details) => _editMode ? {} : {},
+                        child: CustomPaint(
+                          painter: ResizeDraw(
+                            _editMode ? _editingRect : _data?.rect,
+                            _screenSize(context),
+                            _editMode
                           ),
                         ),
                       ),
