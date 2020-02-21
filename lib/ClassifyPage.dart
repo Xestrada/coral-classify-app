@@ -188,7 +188,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
   void _saveEditedRect(bool shouldSave) {
     setState(() {
       if(shouldSave) {
-        _data.rect = _editingRect;
+        _data.rect = Map.from(_editingRect);
       } else {
         _editingRect = Map.from(_data.rect);
       }
@@ -405,49 +405,14 @@ class _ClassifyPageState extends State<ClassifyPage> {
                         onPanUpdate: (details) => _editMode ?
                         _moveRectDrag(details, context) : {},
                         child: CustomPaint(
+                          willChange: true,
                           painter: DetectDraw(
-                              _editMode ? _editingRect : _data?.rect,
+                              Map.from(_editingRect),
                               _screenSize(context),
                               _determinePaint()
                           ),
                         ),
                       ),
-                    ),
-                    _resizeButton(
-                      FractionalOffset(
-                        _editingRect["x"] + _editingRect["w"]/2.0,
-                        _editingRect["y"] - 20/_screenSize(context).height,
-                      ),
-                      _resizeRect,
-                      false,
-                      false,
-                    ),
-                    _resizeButton(
-                        FractionalOffset(
-                          _editingRect["x"] + _editingRect["w"]/2.0,
-                          _editingRect["y"] + _editingRect["h"] + 15/_screenSize(context).height,
-                        ),
-                        _resizeRect,
-                        false,
-                        true
-                    ),
-                    _resizeButton(
-                      FractionalOffset(
-                        _editingRect["x"] - 20/_screenSize(context).width,
-                        _editingRect["y"] + _editingRect["h"]/2.0,
-                      ),
-                      _resizeRect,
-                      true,
-                      false,
-                    ),
-                    _resizeButton(
-                        FractionalOffset(
-                          _editingRect["x"] + _editingRect["w"] + 15/_screenSize(context).width,
-                          _editingRect["y"] + _editingRect["h"]/2.0,
-                        ),
-                        _resizeRect,
-                        true,
-                        true
                     ),
                     Align(
                       alignment: _determineAlignment(),
