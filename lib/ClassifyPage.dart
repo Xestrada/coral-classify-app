@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:share_extend/share_extend.dart';
 import 'dart:io';
@@ -23,6 +24,8 @@ class ClassifyPage extends StatefulWidget {
 
 class _ClassifyPageState extends State<ClassifyPage> {
 
+  GlobalKey _rectKey;
+  List<GlobalKey> _resizeKeys;
   DetectedData _data;
   Map _editingRect;
   Paint _unselectedPaint, _selectedPaint, _editingPaint;
@@ -33,9 +36,13 @@ class _ClassifyPageState extends State<ClassifyPage> {
   @override
   void initState() {
     super.initState();
+    // Init Variables
     _buttonSize = 55;
     _editMode = false;
     _showData = false;
+    // Setup Global Keys
+    _rectKey = GlobalKey();
+    _resizeKeys = [GlobalKey(), GlobalKey(), GlobalKey(), GlobalKey()];
     // Setup all Paints
     _selectedPaint = Paint();
     _unselectedPaint = Paint();
@@ -252,19 +259,18 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   /// Button Allowing for Modification of the detected object rect
-  Widget _resizeButton(Alignment align, Function f, bool x, bool pos) {
-    return Align(
-      alignment: align,
-      child: GestureDetector(
-        onPanUpdate: (details) => f(details, x, pos),
-        child: Container(
-          height: _editMode ? 40.0 : 0,
-          width: _editMode ? 40.0 : 0,
-          child: RawMaterialButton(
-            onPressed: () {},
-            shape: new CircleBorder(),
-            elevation: 2.0,
-            fillColor: Colors.white,
+  Widget _resizeButton(double x, double y) {
+    return Container(
+      height: _screenSize(context).height,
+      width: _screenSize(context).width,
+      child: GestureDetector( // Detect Touch on the Resize Points
+        onPanUpdate: (details) => _editMode ? {} : {},
+        child: CustomPaint(
+          painter: ResizeDraw(
+              x,
+              y,
+              _screenSize(context),
+              _editMode
           ),
         ),
       ),
@@ -401,16 +407,47 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       height: _screenSize(context).height,
                       width: _screenSize(context).width,
                       child: GestureDetector(
-                        onTap: () => _editMode ? {} : _showImageData(),
-                        onPanUpdate: (details) => _editMode ?
-                        _moveRectDrag(details, context) : {},
-                        child: CustomPaint(
-                          willChange: true,
-                          painter: DetectDraw(
-                              Map.from(_editingRect),
-                              _screenSize(context),
-                              _determinePaint()
-                          ),
+//                        onTapUp: (details) => _editMode ? {} : _showImageData(),
+                        onTapUp: (details) {
+                          final RenderBox box = _rectKey.currentContext.findRenderObject();
+                          Offset _rectOffset = box.globalToLocal(details.globalPosition);
+                          if(box.hitTest(BoxHitTestResult(), position: _rectOffset) && !_editMode) {
+                            _showImageData();
+                          }
+                        },
+                        onPanUpdate: (details) {
+                          final RenderBox box = _rectKey.currentContext.findRenderObject();
+//                          final List<RenderBox> resizeAreas = [ // TLBR
+//                            _resizeKeys[0].currentContext.findRenderObject(),
+//                            _resizeKeys[1].currentContext.findRenderObject(),
+//                            _resizeKeys[2].currentContext.findRenderObject(),
+//                            _resizeKeys[3].currentContext.findRenderObject()
+//                          ];
+                          Offset _rectOffset = box.globalToLocal(details.globalPosition);
+//                          List<Offset> _resizeOffsets = [
+//                            resizeAreas[0].globalToLocal(details.globalPosition),
+//                            resizeAreas[1].globalToLocal(details.globalPosition),
+//                            resizeAreas[2].globalToLocal(details.globalPosition),
+//                            resizeAreas[3].globalToLocal(details.globalPosition),
+//                          ];
+
+                          if(box.hitTest(BoxHitTestResult(), position: _rectOffset) && _editMode) {
+                            _moveRectDrag(details, context);
+                          }
+
+                        },
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: <Widget> [
+                            CustomPaint(
+                              key: _rectKey,
+                              painter: DetectDraw(
+                                  Map.from(_editingRect),
+                                  _screenSize(context),
+                                  _determinePaint()
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

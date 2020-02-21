@@ -28,6 +28,9 @@ class ResizeDraw extends CustomPainter {
   bool shouldRepaint(ResizeDraw old) => old.x != x || old.y != y;
 
   @override
-  bool hitTest(Offset offset) => null;
+  bool hitTest(Offset offset) {
+    print("touched");
+    return true;
+  }
 
 }
