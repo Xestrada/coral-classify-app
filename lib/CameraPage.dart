@@ -74,9 +74,11 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     _camControl?.dispose();
+    await Tflite.close();
     super.dispose();
+    print("disposed");
   }
 
   /// Load Tflite Model
