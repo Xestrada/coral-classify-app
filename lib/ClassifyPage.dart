@@ -5,6 +5,7 @@ import 'dart:io';
 import 'dart:convert';
 import './DetectDraw.dart';
 import './DetectedData.dart';
+import './ResizeDraw.dart';
 
 class ClassifyPage extends StatefulWidget {
 
@@ -185,13 +186,14 @@ class _ClassifyPageState extends State<ClassifyPage> {
   /// Either save edited rect size and location to [_data.rect] or
   /// set [_editingRect] to copy of [_data.rect]
   void _saveEditedRect(bool shouldSave) {
-    if(shouldSave) {
-      setState(() {
+    setState(() {
+      if(shouldSave) {
         _data.rect = _editingRect;
-      });
-    } else {
-      _editingRect = Map.from(_data.rect);
-    }
+      } else {
+        _editingRect = Map.from(_data.rect);
+      }
+    });
+
     _toggleEditMode();
   }
 
