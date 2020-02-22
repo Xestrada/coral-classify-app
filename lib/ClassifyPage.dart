@@ -213,6 +213,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _toggleEditMode();
   }
 
+  /// Determine what drawn CustomPaint widget is being dragged
   void _determineWhichDragged(DragUpdateDetails details) {
     final RenderBox box = _rectKey.currentContext.findRenderObject();
     final List<RenderBox> resizeAreas = [ // TLBR
