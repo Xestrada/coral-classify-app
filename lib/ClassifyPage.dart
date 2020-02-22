@@ -7,6 +7,7 @@ import 'dart:convert';
 import './DetectDraw.dart';
 import './DetectedData.dart';
 import './ResizeDraw.dart';
+import './InfoDraw.dart';
 
 class ClassifyPage extends StatefulWidget {
 
@@ -260,44 +261,6 @@ class _ClassifyPageState extends State<ClassifyPage> {
     return MediaQuery.of(context).size;
   }
 
-  /// Determine the best place on the screen to display the data of
-  /// the detected object
-  Alignment _determineAlignment() {
-    double x = _data?.rect["x"];
-    double y = _data?.rect["y"];
-    double h = _data?.rect["h"];
-    double w = _data?.rect["w"];
-    if(_data?.rect == null) {
-      return Alignment.center;
-    } else if(y - 100/_screenSize(context).height > 0) {
-      return FractionalOffset(
-          x + (w/2.0),
-          y - 100/_screenSize(context).height
-      );
-    } else if(y + h + 100/_screenSize(context).height < 1.0) {
-      return FractionalOffset(
-          x + (w/2.0),
-          y + h + 100/_screenSize(context).height
-      );
-    } else if(h + w + 250.0/_screenSize(context).width < 1.0) {
-      return FractionalOffset(
-          x + w + 250.0/_screenSize(context).width,
-          y + (h/2.0)
-      );
-    } else if (x - 230.0/_screenSize(context).width > 0){
-      return FractionalOffset(
-          x - 230.0/_screenSize(context).width,
-          y + (h/2.0)
-      );
-    } else {
-      return FractionalOffset(
-          _data.rect["x"] + (_data?.rect["w"]/2.0),
-          _data?.rect["y"] + (_data?.rect["h"]/2.0)
-      );
-    }
-
-  }
-
   ///Determine what paint to use
   Paint _determinePaint() {
     if(_editMode) {
@@ -511,54 +474,16 @@ class _ClassifyPageState extends State<ClassifyPage> {
                                   _editMode && !_shouldDrag
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: _determineAlignment(),
-                      child: Container(
-                        width: _showData ? 170 : 0,
-                        height: _showData ? 100 : 0,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 20,
-                              height: 2,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 10.0,
-                                  color: Colors.grey,
-                                  offset: Offset(5.0, 5.0),
-                                ),
-                              ],
+                            CustomPaint( // Detected Object Info
+                              painter: InfoDraw(
+                                Map.from(_editingRect),
+                                _screenSize(context),
+                                _data?.detectedClass,
+                                _data?.prob,
+                                _showData
+                              ),
                             ),
-                            text: 'Type: ',
-                            children: <TextSpan>[
-                              TextSpan(
-                                style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                text: '${_data?.detectedClass ?? "N/A"}\n',
-                              ),
-                              TextSpan(
-                                text: 'Confidence: ',
-                              ),
-                              TextSpan(
-                                style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                text: '${((_data?.prob ?? 1)*10000).floor()/100}',
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
                       ),
                     ),
