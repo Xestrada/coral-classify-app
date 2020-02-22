@@ -18,19 +18,35 @@ class ResizeDraw extends CustomPainter {
       _resizePaint.style = PaintingStyle.fill;
       _resizePaint.strokeWidth = 2.0;
 
-      canvas.drawCircle(Offset(x, y), 20, _resizePaint);
+      canvas.drawCircle(
+          Offset(x * screenSize.width, y * screenSize.height),
+          25,
+          _resizePaint
+      );
 
     }
 
   }
 
   @override
-  bool shouldRepaint(ResizeDraw old) => old.x != x || old.y != y;
+  bool shouldRepaint(ResizeDraw old) => true;
 
   @override
   bool hitTest(Offset offset) {
-    print("touched");
-    return true;
+    final Offset center = Offset(x * screenSize.width, y * screenSize.height);
+    Path path = Path();
+    path.addRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: center,
+          height: 50,
+          width: 50,
+        ),
+        Radius.circular(center.dx)
+      )
+    );
+    path.close();
+    return path.contains(offset);
   }
 
 }

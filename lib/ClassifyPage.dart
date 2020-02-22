@@ -204,6 +204,43 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _toggleEditMode();
   }
 
+  void _determineWhichDragged(DragUpdateDetails details) {
+    final RenderBox box = _rectKey.currentContext.findRenderObject();
+    final List<RenderBox> resizeAreas = [ // TLBR
+      _resizeKeys[0].currentContext.findRenderObject(),
+      _resizeKeys[1].currentContext.findRenderObject(),
+      _resizeKeys[2].currentContext.findRenderObject(),
+      _resizeKeys[3].currentContext.findRenderObject()
+    ];
+    Offset _rectOffset = box.globalToLocal(details.globalPosition);
+    List<Offset> _resizeOffsets = [ // TLBR
+      resizeAreas[0].globalToLocal(details.globalPosition),
+      resizeAreas[1].globalToLocal(details.globalPosition),
+      resizeAreas[2].globalToLocal(details.globalPosition),
+      resizeAreas[3].globalToLocal(details.globalPosition),
+    ];
+
+    if(_editMode) {
+      // Rectangle is being dragged
+      if(resizeAreas[0].hitTest(BoxHitTestResult(), position: _resizeOffsets[0])) {
+        //Top Drag
+        _resizeRect(details, false, false);
+      } else if(resizeAreas[1].hitTest(BoxHitTestResult(), position: _resizeOffsets[1])) {
+        //Right Drag
+        _resizeRect(details, true, true);
+      } else if(resizeAreas[2].hitTest(BoxHitTestResult(), position: _resizeOffsets[2])) {
+        //Bottom Drag
+        _resizeRect(details, false, true);
+      } else if(resizeAreas[3].hitTest(BoxHitTestResult(), position: _resizeOffsets[3])) {
+        //Left Drag
+        _resizeRect(details, false, false);
+      } else if (box.hitTest(BoxHitTestResult(), position: _rectOffset)) {
+        _moveRectDrag(details, context);
+      }
+
+    }
+  }
+
   /// Get the Screen Size of the Device using [context]
   Size _screenSize(BuildContext context) {
     return MediaQuery.of(context).size;
@@ -256,25 +293,6 @@ class _ClassifyPageState extends State<ClassifyPage> {
     } else {
       return _unselectedPaint;
     }
-  }
-
-  /// Button Allowing for Modification of the detected object rect
-  Widget _resizeButton(double x, double y) {
-    return Container(
-      height: _screenSize(context).height,
-      width: _screenSize(context).width,
-      child: GestureDetector( // Detect Touch on the Resize Points
-        onPanUpdate: (details) => _editMode ? {} : {},
-        child: CustomPaint(
-          painter: ResizeDraw(
-              x,
-              y,
-              _screenSize(context),
-              _editMode
-          ),
-        ),
-      ),
-    );
   }
 
   /// Create buttons for editing mode
@@ -407,7 +425,6 @@ class _ClassifyPageState extends State<ClassifyPage> {
                       height: _screenSize(context).height,
                       width: _screenSize(context).width,
                       child: GestureDetector(
-//                        onTapUp: (details) => _editMode ? {} : _showImageData(),
                         onTapUp: (details) {
                           final RenderBox box = _rectKey.currentContext.findRenderObject();
                           Offset _rectOffset = box.globalToLocal(details.globalPosition);
@@ -415,36 +432,52 @@ class _ClassifyPageState extends State<ClassifyPage> {
                             _showImageData();
                           }
                         },
-                        onPanUpdate: (details) {
-                          final RenderBox box = _rectKey.currentContext.findRenderObject();
-//                          final List<RenderBox> resizeAreas = [ // TLBR
-//                            _resizeKeys[0].currentContext.findRenderObject(),
-//                            _resizeKeys[1].currentContext.findRenderObject(),
-//                            _resizeKeys[2].currentContext.findRenderObject(),
-//                            _resizeKeys[3].currentContext.findRenderObject()
-//                          ];
-                          Offset _rectOffset = box.globalToLocal(details.globalPosition);
-//                          List<Offset> _resizeOffsets = [
-//                            resizeAreas[0].globalToLocal(details.globalPosition),
-//                            resizeAreas[1].globalToLocal(details.globalPosition),
-//                            resizeAreas[2].globalToLocal(details.globalPosition),
-//                            resizeAreas[3].globalToLocal(details.globalPosition),
-//                          ];
-
-                          if(box.hitTest(BoxHitTestResult(), position: _rectOffset) && _editMode) {
-                            _moveRectDrag(details, context);
-                          }
-
-                        },
-                        child: Stack(
+                        onPanUpdate: (details) => _determineWhichDragged(details),
+                        child: Stack( // Custom Paint Drawings
                           fit: StackFit.expand,
                           children: <Widget> [
                             CustomPaint(
                               key: _rectKey,
                               painter: DetectDraw(
-                                  Map.from(_editingRect),
+                                Map.from(_editingRect),
+                                _screenSize(context),
+                                _determinePaint()
+                              ),
+                            ),
+                            CustomPaint( // Top
+                              key: _resizeKeys[0],
+                              painter: ResizeDraw(
+                                  _editingRect["x"] + _editingRect["w"]/2.0,
+                                  _editingRect["y"],
                                   _screenSize(context),
-                                  _determinePaint()
+                                  _editMode
+                              ),
+                            ),
+                            CustomPaint( // Right
+                              key: _resizeKeys[1],
+                              painter: ResizeDraw(
+                                  _editingRect["x"] + _editingRect["w"],
+                                  _editingRect["y"] + _editingRect["h"]/2.0,
+                                  _screenSize(context),
+                                  _editMode
+                              ),
+                            ),
+                            CustomPaint( // Bottom
+                              key: _resizeKeys[2],
+                              painter: ResizeDraw(
+                                  _editingRect["x"] + _editingRect["w"]/2.0,
+                                  _editingRect["y"] + _editingRect["h"],
+                                  _screenSize(context),
+                                  _editMode
+                              ),
+                            ),
+                            CustomPaint( // Left
+                              key: _resizeKeys[3],
+                              painter: ResizeDraw(
+                                  _editingRect["x"],
+                                  _editingRect["y"] + _editingRect["h"]/2.0,
+                                  _screenSize(context),
+                                  _editMode
                               ),
                             ),
                           ],
