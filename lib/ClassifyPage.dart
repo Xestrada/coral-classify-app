@@ -32,6 +32,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
   double _buttonSize;
   bool _showData;
   bool _editMode;
+  bool _shouldDrag;
 
   @override
   void initState() {
@@ -40,6 +41,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _buttonSize = 55;
     _editMode = false;
     _showData = false;
+    _shouldDrag = true;
     // Setup Global Keys
     _rectKey = GlobalKey();
     _resizeKeys = [GlobalKey(), GlobalKey(), GlobalKey(), GlobalKey()];
@@ -126,6 +128,13 @@ class _ClassifyPageState extends State<ClassifyPage> {
     Navigator.pop(context);
     Navigator.pop(context);
 
+  }
+
+  /// Toggle [_shouldDrag]
+  void _toggleShouldDrag() {
+    setState(() {
+      _shouldDrag = !_shouldDrag;
+    });
   }
 
   /// Toggle [_showData]
@@ -222,20 +231,24 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
     if(_editMode) {
       // Rectangle is being dragged
-      if(resizeAreas[0].hitTest(BoxHitTestResult(), position: _resizeOffsets[0])) {
-        //Top Drag
-        _resizeRect(details, false, false);
-      } else if(resizeAreas[1].hitTest(BoxHitTestResult(), position: _resizeOffsets[1])) {
-        //Right Drag
-        _resizeRect(details, true, true);
-      } else if(resizeAreas[2].hitTest(BoxHitTestResult(), position: _resizeOffsets[2])) {
-        //Bottom Drag
-        _resizeRect(details, false, true);
-      } else if(resizeAreas[3].hitTest(BoxHitTestResult(), position: _resizeOffsets[3])) {
-        //Left Drag
-        _resizeRect(details, false, false);
-      } else if (box.hitTest(BoxHitTestResult(), position: _rectOffset)) {
-        _moveRectDrag(details, context);
+      if(_shouldDrag){
+        if (box.hitTest(BoxHitTestResult(), position: _rectOffset)) {
+          _moveRectDrag(details, context);
+        }
+      } else {
+        if(resizeAreas[0].hitTest(BoxHitTestResult(), position: _resizeOffsets[0])) {
+          //Top Drag
+          _resizeRect(details, false, false);
+        } else if(resizeAreas[1].hitTest(BoxHitTestResult(), position: _resizeOffsets[1])) {
+          //Right Drag
+          _resizeRect(details, true, true);
+        } else if(resizeAreas[2].hitTest(BoxHitTestResult(), position: _resizeOffsets[2])) {
+          //Bottom Drag
+          _resizeRect(details, false, true);
+        } else if(resizeAreas[3].hitTest(BoxHitTestResult(), position: _resizeOffsets[3])) {
+          //Left Drag
+          _resizeRect(details, true, false);
+        }
       }
 
     }
@@ -300,6 +313,23 @@ class _ClassifyPageState extends State<ClassifyPage> {
     return Stack(
         fit: StackFit.expand,
         children: <Widget>[
+          FractionallySizedBox(
+            widthFactor: 0.85,
+            heightFactor: 0.1,
+            alignment: Alignment.topCenter,
+            child: Stack(
+              children: <Widget> [
+                Align(
+                  alignment: Alignment.center,
+                  child: IconButton(
+                    iconSize: _buttonSize,
+                    icon: Icon(_shouldDrag ? MdiIcons.resize : MdiIcons.dragVariant),
+                    onPressed: () => _toggleShouldDrag(),
+                  ),
+                ),
+              ],
+            ),
+          ),
           FractionallySizedBox(
             widthFactor: 0.85,
             heightFactor: 0.1,
@@ -450,7 +480,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                                   _editingRect["x"] + _editingRect["w"]/2.0,
                                   _editingRect["y"],
                                   _screenSize(context),
-                                  _editMode
+                                  _editMode && !_shouldDrag
                               ),
                             ),
                             CustomPaint( // Right
@@ -459,7 +489,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                                   _editingRect["x"] + _editingRect["w"],
                                   _editingRect["y"] + _editingRect["h"]/2.0,
                                   _screenSize(context),
-                                  _editMode
+                                  _editMode && !_shouldDrag
                               ),
                             ),
                             CustomPaint( // Bottom
@@ -468,7 +498,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                                   _editingRect["x"] + _editingRect["w"]/2.0,
                                   _editingRect["y"] + _editingRect["h"],
                                   _screenSize(context),
-                                  _editMode
+                                  _editMode && !_shouldDrag
                               ),
                             ),
                             CustomPaint( // Left
@@ -477,7 +507,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                                   _editingRect["x"],
                                   _editingRect["y"] + _editingRect["h"]/2.0,
                                   _screenSize(context),
-                                  _editMode
+                                  _editMode && !_shouldDrag
                               ),
                             ),
                           ],

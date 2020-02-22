@@ -39,8 +39,8 @@ class ResizeDraw extends CustomPainter {
       RRect.fromRectAndRadius(
         Rect.fromCenter(
           center: center,
-          height: 50,
-          width: 50,
+          height: 200,
+          width: 200,
         ),
         Radius.circular(center.dx)
       )
