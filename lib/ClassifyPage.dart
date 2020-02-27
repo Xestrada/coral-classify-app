@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:share_extend/share_extend.dart';
+import 'package:image/image.dart' as ImageEditor;
 import 'dart:io';
 import 'dart:convert';
 import './DetectDraw.dart';

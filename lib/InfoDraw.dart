@@ -11,7 +11,6 @@ class InfoDraw extends CustomPainter {
   double boxWidth;
   double boxHeight;
 
-  // TODO - Make alignment determination in this class rather than in ClassifyPage
   InfoDraw(this.rect, this.screenSize, this.detectedClass, this.prob, this.showData) {
     boxWidth = 180;
     boxHeight = 120;

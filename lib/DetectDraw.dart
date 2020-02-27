@@ -19,7 +19,6 @@ class DetectDraw extends CustomPainter {
       h = rect["h"] * size.height;
       Rect drawRect = Offset(x, y) & Size(w, h);
       canvas.drawRect(drawRect, customPaint);
-
     }
 
   }
@@ -30,7 +29,6 @@ class DetectDraw extends CustomPainter {
   @override
   bool hitTest(Offset offset) {
     Path path = Path();
-    Path resizePath = Path();
     // Add rectangle
     double x, y, w, h;
     x = rect["x"] * screenSize.width;
