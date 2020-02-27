@@ -58,7 +58,6 @@ class _GalleryState extends State<Gallery> {
 
   /// Build the Grid View
   Widget _buildGrid(Iterable<FileSystemEntity> images) {
-    //TODO - Fix Bad image layout
     return GridView.count(
         shrinkWrap: true,
         scrollDirection: Axis.vertical,
@@ -75,14 +74,14 @@ class _GalleryState extends State<Gallery> {
                     foregroundDecoration: BoxDecoration(
                       border: Border.all(
                         color: Colors.black,
-                        width: 20,
+                        width: 5,
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(4),
                       image: DecorationImage(
                         fit: BoxFit.fitWidth,
                         image: FileImage(
                           File(images.elementAt(index).path),
-                          scale: 0.5,
+                          scale: 0.25,
                         ),
                       ),
                     ),
@@ -137,8 +136,6 @@ class _GalleryState extends State<Gallery> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,6 +152,7 @@ class _GalleryState extends State<Gallery> {
       ),
       body: Container(
         color: Colors.white,
+        padding: EdgeInsets.fromLTRB(0, 5.0, 0, 0),
         child: FutureBuilder<Directory>(
           future: _programDir,
           builder: (context, snapshot) {

@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:tflite/tflite.dart';
 import './Gallery.dart';
 import './CameraPage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final List<CameraDescription> cameras = await availableCameras();
-  await Tflite.loadModel(
-    model: "assets/ssd_mobilenet.tflite",
-    labels: "assets/ssd_mobilenet.txt",
-    numThreads: 4,
-  );
   runApp(CoralClassify(cameras: cameras));
 }
 

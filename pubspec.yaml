@@ -23,8 +23,7 @@ dependencies:
 
   cupertino_icons: ^0.1.2
   camera: ^0.5.7+3
-  downloads_path_provider: ^0.1.0
-  image_gallery_saver: ^1.2.2
+  image: ^2.1.4
   json_annotation: ^3.0.1
   material_design_icons_flutter: ^3.4.4895
   path_provider: ^1.5.1

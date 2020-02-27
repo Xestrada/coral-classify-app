@@ -34,6 +34,8 @@ class _CameraPageState extends State<CameraPage> {
   String _currentCoralType, _savedCoralType;
   /// Confidence that it is the type of Coral
   double _currentProb, _savedProb;
+  ///Size of Buttons
+  double _buttonSize;
   /// Flag determining when a coral is being detected
   bool _isDetecting;
   /// Flag Determining if an ImageStream is running
@@ -45,6 +47,7 @@ class _CameraPageState extends State<CameraPage> {
   void initState() {
 
     super.initState();
+    _buttonSize = 55.0;
     _isDetecting = false;
     _shouldImageStream = true;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
@@ -55,6 +58,9 @@ class _CameraPageState extends State<CameraPage> {
     _customPaint.color = Colors.yellow;
     _customPaint.style = PaintingStyle.stroke;
     _customPaint.strokeWidth = 2.0;
+
+    //Load Tflite Model
+    _loadModel();
 
     // Setup Camera Control
     _camControl = CameraController(widget.cameras.first, ResolutionPreset.high, enableAudio: false);
@@ -68,9 +74,131 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   @override
-  void dispose() {
+  void dispose() async {
     _camControl?.dispose();
+    await Tflite.close();
     super.dispose();
+    print("disposed");
+  }
+
+  /// Load Tflite Model
+  void _loadModel() async {
+    await Tflite.loadModel(
+      model: "assets/ssd_mobilenet.tflite",
+      labels: "assets/ssd_mobilenet.txt",
+      numThreads: 4,
+    );
+  }
+
+  /// Process [image] through TensorFlow model
+  void _processCameraImage(CameraImage image) async {
+    if(!_isDetecting) {
+      _isDetecting = true;
+      // Detect Corals
+      List results = await Future.wait(
+          [_findCorals(image), Future.delayed(Duration(milliseconds: 1100))]
+      );
+      _isDetecting = false;
+      setState(() {
+        if(_shouldImageStream) {
+          _currentRect = results[0][0];
+          _currentCoralType = results[0][1];
+          _currentProb = results[0][2];
+        }
+      });
+    }
+  }
+
+  /// Take a picture and create a new page using [context] showing the image
+  void _takePicture(BuildContext context) async {
+
+    // Ensure camera is ready and available
+    await _camFuture;
+
+    // Get directory for images to be saved in
+    final String dir = (await getApplicationDocumentsDirectory()).path;
+
+    // Save currently detected Corals
+    _savedRect = _currentRect;
+    _savedCoralType = _currentCoralType;
+    _savedProb = _currentProb;
+
+    // Stop Image Stream.
+    await _disableImageStream();
+
+    // Name the Image
+    final String stamp = "${DateTime.now()}.png";
+
+    // Add delay
+    // TODO - Wait for Camera plugin update to fix hacky takePicture
+    await Future.delayed(Duration(milliseconds: 2));
+
+    try {
+
+      final String _saveDir = join(dir, "$stamp");
+      await _camControl.takePicture(_saveDir);
+
+      // Go to ClassifyPage only if no CameraError
+      await _goToClassifyPage(context, _saveDir);
+      //Restart ImageStream
+      await _enableImageStream();
+
+    } catch(e) {
+      // Restart this method if failed
+      // DUE TO BUG IN FLUTTER CAMERA PLUGIN REGARDING RESTARTING IMAGESTREAM
+      _takePicture(context);
+    }
+
+  }
+
+  /// Go to ClassifyPage while opening image at [path]
+  Future<void> _goToClassifyPage(BuildContext context, String path) async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ClassifyPage(
+              path: path,
+              data: DetectedData(
+                  rect: _savedRect,
+                  detectedClass: _savedCoralType,
+                  prob: _savedProb
+              ),
+            )
+        )
+    );
+  }
+
+  /// Go to the Gallery Page
+  void _goToGallery(BuildContext context) async {
+    //Stop ImageStream
+    await _disableImageStream();
+    // Go to Gallery and wait until popped
+    await Navigator.pushNamed(
+        context,
+        '/gallery'
+    );
+    //Restart ImageStreaming
+    await _enableImageStream();
+  }
+
+  /// Toggle the ImageStream that allows for Object Detection
+  void _toggleImageStream() async {
+    //Toggle state
+    setState(() {
+      _shouldImageStream = !_shouldImageStream;
+      _currentRect = null;
+      _savedRect = null;
+    });
+    // Set Camera depending on state
+    if(_shouldImageStream) {
+      await _camControl.startImageStream((CameraImage image) =>
+          _processCameraImage(image)
+      );
+      _isImageStreaming = true;
+    } else {
+      await _camControl.stopImageStream();
+      _isImageStreaming = false;
+    }
   }
 
   /// Find Corals in [image]
@@ -113,113 +241,6 @@ class _CameraPageState extends State<CameraPage> {
 
   }
 
-  /// Process [image] through TensorFlow model
-  void _processCameraImage(CameraImage image) async {
-    if(!_isDetecting) {
-      _isDetecting = true;
-      // Detect Corals
-      List results = await Future.wait(
-          [_findCorals(image), Future.delayed(Duration(milliseconds: 1100))]
-      );
-      _isDetecting = false;
-      setState(() {
-        _currentRect = results[0][0];
-        _currentCoralType = results[0][1];
-        _currentProb = results[0][2];
-      });
-    }
-  }
-
-  /// Take a picture and create a new page using [context] showing the image
-  void _takePicture(BuildContext context) async {
-
-    // Ensure camera is ready and available
-    await _camFuture;
-
-    // Get directory for images to be saved in
-    final String dir = (await getApplicationDocumentsDirectory()).path;
-
-    // Save currently detected Corals
-    _savedRect = _currentRect;
-    _savedCoralType = _currentCoralType;
-    _savedProb = _currentProb;
-
-    // Stop Image Stream.
-    await _disableImageStream();
-
-    // Name the Image
-    final String stamp = "${DateTime.now()}.png";
-
-    // Add delay
-    // TODO - Wait for Camera plugin update to fix hacky takePicture
-    await Future.delayed(Duration(milliseconds: 2));
-
-    try {
-
-      final String _saveDir = join(dir, "$stamp");
-      await _camControl.takePicture(_saveDir);
-
-      // Go to ClassifyPage only if no CameraError
-      _goToClassifyPage(context, _saveDir);
-      //Restart ImageStream
-      await _enableImageStream();
-
-    } catch(e) {
-      // Restart this method if failed
-      // DUE TO BUG IN FLUTTER CAMERA PLUGIN REGARDING RESTARTING IMAGESTREAM
-      _takePicture(context);
-    }
-
-  }
-
-  /// Go to ClassifyPage while opening image at [path]
-  void _goToClassifyPage(BuildContext context, String path) async {
-    await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => ClassifyPage(
-              path: path,
-              data: DetectedData(
-                  rect: _savedRect,
-                  detectedClass: _savedCoralType,
-                  prob: _savedProb
-              ),
-            )
-        )
-    );
-  }
-
-  /// Go to the Gallery Page
-  void _goToGallery(BuildContext context) async {
-    //Stop ImageStream
-    await _disableImageStream();
-    // Go to Gallery and wait until popped
-    await Navigator.pushNamed(
-        context,
-        '/gallery'
-    );
-    //Restart ImageStreaming
-    await _enableImageStream();
-  }
-
-  /// Toggle the ImageStream that allows for Object Detection
-  void _toggleImageStream() async {
-    //Toggle state
-    setState(() {
-      _shouldImageStream = !_shouldImageStream;
-    });
-    // Set Camera depending on state
-    if(_shouldImageStream) {
-      await _camControl.startImageStream((CameraImage image) =>
-          _processCameraImage(image)
-      );
-      _isImageStreaming = true;
-    } else {
-      await _camControl.stopImageStream();
-      _isImageStreaming = false;
-    }
-  }
-
   /// Disable the ImageStream
   Future<void> _disableImageStream() async {
     if(_isImageStreaming && _shouldImageStream) {
@@ -250,48 +271,36 @@ class _CameraPageState extends State<CameraPage> {
                 child: AspectRatio(
                   aspectRatio: 10,
                   child: FutureBuilder<void>(
-                      future: _camFuture,
-                      // ignore: missing_return
-                      builder: (context, snapshot) {
-                        switch(snapshot.connectionState) {
-                          case ConnectionState.waiting:
-                            {
-                              return Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            } break;
-                          case ConnectionState.active:
-                            continue done;
-                          done:
-                          case ConnectionState.done: {
-                            return Stack (
-                                fit: StackFit.expand,
-                                children: <Widget> [
-                                  CameraPreview(_camControl),
-                                  CustomPaint(
-                                      painter:
-                                      DetectDraw(
-                                        _currentRect,
-                                        MediaQuery.of(context).size,
-                                        _customPaint
-                                      )
-                                  ),
-                                ]
-                            );
-                          } break;
-                          case ConnectionState.none: {
-                            continue def;
-                          }
-                          def:
-                          default: {
-                            return Center(
-                              child: Text(
-                                "Failed ot Initialize Cameras",
+                    future: _camFuture,
+                    builder: (context, snapshot) {
+                      if(snapshot.connectionState == ConnectionState.waiting) {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if(snapshot.connectionState == ConnectionState.active
+                        || snapshot.connectionState == ConnectionState.done) {
+                        return Stack (
+                            fit: StackFit.expand,
+                            children: <Widget> [
+                              CameraPreview(_camControl),
+                              CustomPaint(
+                                  painter:
+                                  DetectDraw(
+                                      _currentRect,
+                                      MediaQuery.of(context).size,
+                                      _customPaint
+                                  )
                               ),
-                            );
-                          }
-                        }
+                            ]
+                        );
+                      } else {
+                        return Center(
+                          child: Text(
+                            "Failed ot Initialize Cameras",
+                          ),
+                        );
                       }
+                    }
                   ),
                 ),
               ),
@@ -306,25 +315,31 @@ class _CameraPageState extends State<CameraPage> {
             children: <Widget> [
               Align(
                 alignment: Alignment.centerLeft,
-                child: FloatingActionButton(
-                  heroTag: null,
+                child: MaterialButton(
+                  color: Colors.blue,
+                  shape: CircleBorder(),
+                  height: _buttonSize,
                   child: Icon(_shouldImageStream ? MdiIcons.eye : MdiIcons.eyeOff),
                   onPressed: () => _toggleImageStream(),
                 ),
               ),
               Align(
                 alignment: Alignment.center,
-                child: FloatingActionButton(
-                  heroTag: null,
+                child: MaterialButton(
+                  color: Colors.blue,
+                  shape: CircleBorder(),
                   child: Icon(Icons.camera_alt),
+                  height: _buttonSize,
                   onPressed: () => _takePicture(context),
                 ),
               ),
               Align(
                 alignment: Alignment.centerRight,
-                child: FloatingActionButton(
-                  heroTag: null,
+                child: MaterialButton(
+                  color: Colors.blue,
+                  shape: CircleBorder(),
                   child: Icon(Icons.photo_album),
+                  height: _buttonSize,
                   onPressed: () => _goToGallery(context),
                 ),
               ),
