@@ -257,6 +257,10 @@ class _ClassifyPageState extends State<ClassifyPage> {
     }
   }
 
+  Image _cropDetected() {
+    //return img.copyCrop(img.pn, x, y, w, h);
+  }
+
   /// Get the Screen Size of the Device using [context]
   Size _screenSize(BuildContext context) {
     return MediaQuery.of(context).size;
