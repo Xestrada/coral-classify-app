@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:share_extend/share_extend.dart';
-import 'package:image/image.dart' as ImageEditor;
+import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'dart:convert';
 import './DetectDraw.dart';
@@ -31,6 +31,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
   DetectedData _data;
   Map _editingRect;
   Paint _unselectedPaint, _selectedPaint, _editingPaint;
+  File _imageFile, _jsonFile;
   double _buttonSize;
   bool _showData;
   bool _editMode;
@@ -44,6 +45,10 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _editMode = false;
     _showData = false;
     _shouldDrag = true;
+    _imageFile = File(this.widget.path);
+    _jsonFile = File(
+        "${this.widget.path.substring(0, this.widget.path.length - 4)}.json"
+    );
     // Setup Global Keys
     _rectKey = GlobalKey();
     _resizeKeys = [GlobalKey(), GlobalKey(), GlobalKey(), GlobalKey()];
@@ -100,12 +105,10 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   /// Save the Image and any Detected Data
   void _saveImage(BuildContext context) async {
-    final String jsonPath = "${widget.path.substring(0, widget.path.length - 4)}.json";
     Map<String, dynamic> _storableData = (_data == null)
         ? DetectedData(rect: null, detectedClass: null, prob: null).toJson() :
     _data.toJson();
-    File jsonFile = File(jsonPath);
-    jsonFile.writeAsString(jsonEncode(_storableData));
+    _jsonFile.writeAsString(jsonEncode(_storableData));
     Navigator.pop(context);
   }
 
@@ -116,19 +119,16 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   /// Delete the Image and any detected Data
   void _deleteImage(BuildContext context) async {
-    File f = File(this.widget.path);
-    final String jsonPath = "${widget.path.substring(0, widget.path.length - 4)}.json";
-    File jsonFile = File(jsonPath);
 
     try {
-      await f.delete(recursive: false);
-      await jsonFile.delete(recursive: false);
+      await _imageFile.delete(recursive: false);
+      await _jsonFile.delete(recursive: false);
     } catch(e) {
       print(e);
     }
 
-    Navigator.pop(context);
-    Navigator.pop(context);
+    Navigator.pop(context); // Pop Dialog
+    Navigator.pop(context); // Return to Original Page
 
   }
 
@@ -146,7 +146,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     });
   }
 
-  /// Toggle [_editMode]
+  /// Toggle [_editMode] and create default rect if none created
   void _toggleEditMode() {
     setState(() {
       _editMode = !_editMode;
@@ -238,7 +238,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
         if (box.hitTest(BoxHitTestResult(), position: _rectOffset)) {
           _moveRectDrag(details, context);
         }
-      } else {
+      } else { // Resize Dragging
         if(resizeAreas[0].hitTest(BoxHitTestResult(), position: _resizeOffsets[0])) {
           //Top Drag
           _resizeRect(details, false, false);
@@ -273,7 +273,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     }
   }
 
-  /// Create buttons for editing mode
+  /// Create buttons for edit mode
   Widget _editModeButtons() {
     return Stack(
         fit: StackFit.expand,
@@ -414,7 +414,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                   children: <Widget> [
                     Align(
                       alignment: Alignment.center,
-                      child: Image.file(File(widget.path)),
+                      child: Image.file(_imageFile),
                     ),
                     Container(
                       height: _screenSize(context).height,
