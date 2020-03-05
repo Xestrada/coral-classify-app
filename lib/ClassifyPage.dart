@@ -279,15 +279,15 @@ class _ClassifyPageState extends State<ClassifyPage> {
     );
     tmp = img.copyRotate(tmp, 90);
     return img.copyResize(tmp,
-        width: 224,
-        height: 224
+        width: 300,
+        height: 300
     );
   }
 
   /// Run TFLite model on cropped image
   void _deepDetect() async {
     if(!_loadedModel) {
-      await _loadModel();
+      //await _loadModel();
       _loadedModel = false;
     }
     List ans = await _classifyCoral(await _cropDetected());
@@ -309,10 +309,9 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
     List resultList;
 
-    // TODO - Remember this model is for object detection not image classification!
     try {
       resultList = await Tflite.detectObjectOnBinary(
-        binary: _imageToByteListFloat32(image, 224, 127.5, 127.5),
+        binary: _imageToByteListUint8(image, 300),
         model: "SSDMobileNet",
         threshold: 0.2,
       );
@@ -345,8 +344,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   /// Convert [image] to Uint8List
-  Uint8List _imageToByteListUint8(img.Image image) {
-    var convertedBytes = Uint8List(1 * image.height * image.width * 3);
+  Uint8List _imageToByteListUint8(img.Image image, int inputSize) {
+    var convertedBytes = Uint8List(1 * inputSize * inputSize * 3);
     var buffer = Uint8List.view(convertedBytes.buffer);
     int pixelIndex = 0;
     for (var i = 0; i < image.height; i++) {
@@ -361,8 +360,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   // Convert [image] to Uint8List of Float32
-  Uint8List _imageToByteListFloat32(
-      img.Image image, int inputSize, double mean, double std) {
+  Float32List _imageToByteListFloat32(img.Image image, int inputSize, double mean, double std) {
     var convertedBytes = Float32List(1 * inputSize * inputSize * 3);
     var buffer = Float32List.view(convertedBytes.buffer);
     int pixelIndex = 0;
@@ -374,7 +372,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
         buffer[pixelIndex++] = (img.getBlue(pixel) - mean) / std;
       }
     }
-    return convertedBytes.buffer.asUint8List();
+    return convertedBytes.buffer.asFloat32List();
   }
 
   /// Get the Screen Size of the Device using [context]
