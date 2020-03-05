@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:share_extend/share_extend.dart';
+import 'package:tflite/tflite.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 import './DetectDraw.dart';
 import './DetectedData.dart';
 import './ResizeDraw.dart';
@@ -39,7 +41,9 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   @override
   void initState() {
+
     super.initState();
+
     // Init Variables
     _buttonSize = 55;
     _editMode = false;
@@ -49,9 +53,11 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _jsonFile = File(
         "${this.widget.path.substring(0, this.widget.path.length - 4)}.json"
     );
+
     // Setup Global Keys
     _rectKey = GlobalKey();
     _resizeKeys = [GlobalKey(), GlobalKey(), GlobalKey(), GlobalKey()];
+
     // Setup all Paints
     _selectedPaint = Paint();
     _unselectedPaint = Paint();
@@ -64,6 +70,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _editingPaint.strokeWidth = 3.0;
     _selectedPaint.strokeWidth = 2.5;
     _unselectedPaint.strokeWidth = 1.0;
+
     //Create modifiable data
     _editingRect = widget.data?.rect == null
         ? {"x":0.0, "y":0.0, "w":0.0, "h": 0.0} : Map.from(widget.data.rect);
@@ -259,8 +266,8 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   // Crop the detected object from the Image
-  void _cropDetected() {
-    img.Image tmp = img.decodeImage(_imageFile.readAsBytesSync());
+  Future<img.Image> _cropDetected() async {
+    img.Image tmp = img.decodeImage(await _imageFile.readAsBytes());
     tmp = img.copyCrop(
         tmp,
         (tmp.width * _editingRect["y"]).round(),
@@ -269,7 +276,76 @@ class _ClassifyPageState extends State<ClassifyPage> {
         (tmp.height * _editingRect["w"]).round()
     );
     tmp = img.copyRotate(tmp, 90);
-    File("${this.widget.path.substring(0, this.widget.path.length - 4)}_cpy").writeAsBytesSync(img.encodePng(tmp));
+    return img.copyResize(tmp,
+        width: (tmp.width/2).round(),
+        height: (tmp.height/2).round()
+    );
+  }
+
+  /// Run TFLite model on cropped image
+  void _deepDetect() async {
+    await Tflite.close();
+    await _loadModel();
+    List ans = await _detectCoral(await _cropDetected());
+    print(ans);
+
+  }
+
+  /// Load Tflite Model
+  Future<void> _loadModel() {
+    return Tflite.loadModel(
+      model: "assets/ssd_mobilenet.tflite",
+      labels: "assets/ssd_mobilenet.txt",
+      numThreads: 4,
+    );
+  }
+
+  Future<List> _detectCoral(img.Image image) async {
+
+    List resultList = await Tflite.detectObjectOnBinary(
+      binary: _imageToByteListUint8(image),
+      model: "SSDMobileNet",
+      threshold: 0.2,
+    );
+
+    List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
+    Map biggestRect; // Biggest Rect of detected Object
+    double maxProb = 0.0;
+    String objectType; // Detected Object name
+    double prob; // Confidence in Class
+
+    if(resultList != null) {
+      for (var item in resultList) {
+        if (possibleCoral.contains(item["detectedClass"])) {
+          // Choose Object with greatest confidence
+          if (item["confidenceInClass"] > maxProb) {
+            biggestRect = item["rect"];
+            objectType = item["detectedClass"];
+            maxProb = prob = item["confidenceInClass"];
+          }
+        }
+      }
+    }
+
+    // Return Map of rectangle, type of detected Object, and confidence
+    return [biggestRect, objectType, prob];
+
+  }
+
+  /// Convert [image] to Uint8List
+  Uint8List _imageToByteListUint8(img.Image image) {
+    var convertedBytes = Uint8List(1 * image.height * image.width * 3);
+    var buffer = Uint8List.view(convertedBytes.buffer);
+    int pixelIndex = 0;
+    for (var i = 0; i < image.height; i++) {
+      for (var j = 0; j < image.width; j++) {
+        var pixel = image.getPixel(j, i);
+        buffer[pixelIndex++] = img.getRed(pixel);
+        buffer[pixelIndex++] = img.getGreen(pixel);
+        buffer[pixelIndex++] = img.getBlue(pixel);
+      }
+    }
+    return convertedBytes.buffer.asUint8List();
   }
 
   /// Get the Screen Size of the Device using [context]
@@ -394,7 +470,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
                     color: _showData ? Colors.blue : Colors.grey,
                     child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
                     shape: new CircleBorder(),
-                    onPressed: () => {},
+                    onPressed: () => _showData ? _deepDetect() : {},
                   ),
                 ),
                 Align(
