@@ -73,6 +73,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
       prob: 0,
       detectedClass: null,
     ) :  widget.data;
+
   }
 
   /// Show the Delete Dialog
@@ -257,8 +258,18 @@ class _ClassifyPageState extends State<ClassifyPage> {
     }
   }
 
-  Image _cropDetected() {
-    //return img.copyCrop(img.pn, x, y, w, h);
+  // Crop the detected object from the Image
+  void _cropDetected() {
+    img.Image tmp = img.decodeImage(_imageFile.readAsBytesSync());
+    tmp = img.copyCrop(
+        tmp,
+        (tmp.width * _editingRect["y"]).round(),
+        (tmp.height * _editingRect["x"]).round(),
+        (tmp.width * _editingRect["h"]).round(),
+        (tmp.height * _editingRect["w"]).round()
+    );
+    tmp = img.copyRotate(tmp, 90);
+    File("${this.widget.path.substring(0, this.widget.path.length - 4)}_cpy").writeAsBytesSync(img.encodePng(tmp));
   }
 
   /// Get the Screen Size of the Device using [context]
