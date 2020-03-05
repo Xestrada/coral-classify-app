@@ -38,6 +38,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
   bool _showData;
   bool _editMode;
   bool _shouldDrag;
+  bool _loadedModel;
 
   @override
   void initState() {
@@ -49,6 +50,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _editMode = false;
     _showData = false;
     _shouldDrag = true;
+    _loadedModel = false;
     _imageFile = File(this.widget.path);
     _jsonFile = File(
         "${this.widget.path.substring(0, this.widget.path.length - 4)}.json"
@@ -284,7 +286,10 @@ class _ClassifyPageState extends State<ClassifyPage> {
 
   /// Run TFLite model on cropped image
   void _deepDetect() async {
-    await _loadModel();
+    if(!_loadedModel) {
+      await _loadModel();
+      _loadedModel = false;
+    }
     List ans = await _classifyCoral(await _cropDetected());
     print(ans);
 
