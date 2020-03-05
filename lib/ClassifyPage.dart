@@ -277,16 +277,15 @@ class _ClassifyPageState extends State<ClassifyPage> {
     );
     tmp = img.copyRotate(tmp, 90);
     return img.copyResize(tmp,
-        width: (tmp.width/2).round(),
-        height: (tmp.height/2).round()
+        width: 224,
+        height: 224
     );
   }
 
   /// Run TFLite model on cropped image
   void _deepDetect() async {
-    await Tflite.close();
     await _loadModel();
-    List ans = await _detectCoral(await _cropDetected());
+    List ans = await _classifyCoral(await _cropDetected());
     print(ans);
 
   }
@@ -300,13 +299,21 @@ class _ClassifyPageState extends State<ClassifyPage> {
     );
   }
 
-  Future<List> _detectCoral(img.Image image) async {
+  /// Classify the coral in [image]
+  Future<List> _classifyCoral(img.Image image) async {
 
-    List resultList = await Tflite.detectObjectOnBinary(
-      binary: _imageToByteListUint8(image),
-      model: "SSDMobileNet",
-      threshold: 0.2,
-    );
+    List resultList;
+
+    // TODO - Remember this model is for object detection not image classification!
+    try {
+      resultList = await Tflite.detectObjectOnBinary(
+        binary: _imageToByteListFloat32(image, 224, 127.5, 127.5),
+        model: "SSDMobileNet",
+        threshold: 0.2,
+      );
+    } catch (e) {
+      print("TFLite model error: $e");
+    }
 
     List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
     Map biggestRect; // Biggest Rect of detected Object
@@ -343,6 +350,23 @@ class _ClassifyPageState extends State<ClassifyPage> {
         buffer[pixelIndex++] = img.getRed(pixel);
         buffer[pixelIndex++] = img.getGreen(pixel);
         buffer[pixelIndex++] = img.getBlue(pixel);
+      }
+    }
+    return convertedBytes.buffer.asUint8List();
+  }
+
+  // Convert [image] to Uint8List of Float32
+  Uint8List _imageToByteListFloat32(
+      img.Image image, int inputSize, double mean, double std) {
+    var convertedBytes = Float32List(1 * inputSize * inputSize * 3);
+    var buffer = Float32List.view(convertedBytes.buffer);
+    int pixelIndex = 0;
+    for (var i = 0; i < inputSize; i++) {
+      for (var j = 0; j < inputSize; j++) {
+        var pixel = image.getPixel(j, i);
+        buffer[pixelIndex++] = (img.getRed(pixel) - mean) / std;
+        buffer[pixelIndex++] = (img.getGreen(pixel) - mean) / std;
+        buffer[pixelIndex++] = (img.getBlue(pixel) - mean) / std;
       }
     }
     return convertedBytes.buffer.asUint8List();
