@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:share_extend/share_extend.dart';
 import 'package:tflite/tflite.dart';
@@ -273,7 +274,41 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
     }
   }
 
-  // Crop the detected object from the Image
+  /// Run TFLite model on cropped image
+  void _deepDetect() async {
+    if(mainModelLoaded) {
+      await _loadModel();
+      mainModelLoaded = false;
+    }
+    Future<List> fut = _classifyCoral(await _cropDetected());
+    setState(() {
+      _detectFuture = fut;
+    });
+  }
+
+  /// Parse object data from [results] and set to [_data]
+  void _parseDetectedCoral(List results) {
+    String coralType = "";
+    double confidence = 0.0;
+    int numClasses = results.length;
+
+    for(var map in results) {
+      coralType += "${map["label"]}, ";
+      confidence += map["confidence"];
+    }
+
+    coralType = coralType.substring(0, coralType.length - 2);
+    coralType = coralType.replaceAll("_", " ");
+    confidence = confidence/numClasses;
+
+    setState(() {
+      _data.detectedClass = coralType;
+      _data.prob = confidence;
+    });
+
+  }
+
+  /// Crop the detected object from the current png image
   Future<img.Image> _cropDetected() async {
     img.Image tmp = img.decodeImage(await _imageFile.readAsBytes());
     tmp = img.copyCrop(
@@ -288,18 +323,6 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
         width: _imageSize,
         height: _imageSize
     );
-  }
-
-  /// Run TFLite model on cropped image
-  void _deepDetect() async {
-    if(mainModelLoaded) {
-      await _loadModel();
-      mainModelLoaded = false;
-    }
-    Future<List> fut = _classifyCoral(await _cropDetected());
-    setState(() {
-      _detectFuture = fut;
-    });
   }
 
   /// Load Tflite Model
@@ -326,17 +349,8 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
       print("TFLite model error: $e");
     }
 
-    String objectType; // Detected Object name
-    double prob; // Confidence in Class
-
-    if(resultList != null) {
-      objectType = resultList[0]["label"];
-      prob = resultList[0]["confidence"];
-    }
-
     // Return Detected Object and Confidence
-    print(resultList);
-    return [objectType, prob];
+    return resultList;
 
   }
 
@@ -615,6 +629,9 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
               future: _detectFuture,
               builder: (context, snapshot) {
                 if(snapshot.connectionState == ConnectionState.none || snapshot.connectionState == ConnectionState.done) {
+                  if(snapshot?.data != null) {
+                    SchedulerBinding.instance.addPostFrameCallback((_) => _parseDetectedCoral(snapshot.data));
+                  }
                   return SizedBox.shrink();
                 } else {
                   return Container(

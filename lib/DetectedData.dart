@@ -5,8 +5,8 @@ part 'DetectedData.g.dart';
 @JsonSerializable()
 class DetectedData {
   Map rect;
-  final String detectedClass;
-  final double prob;
+  String detectedClass;
+  double prob;
   DetectedData({this.rect, this.detectedClass, this.prob});
   factory DetectedData.fromJson(Map<String, dynamic> json) => _$DetectedDataFromJson(json);
   Map<String, dynamic> toJson() => _$DetectedDataToJson(this);
