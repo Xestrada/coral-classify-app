@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:share_extend/share_extend.dart';
 import 'package:tflite/tflite.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'dart:convert';
@@ -27,10 +28,11 @@ class ClassifyPage extends StatefulWidget {
 
 }
 
-class _ClassifyPageState extends State<ClassifyPage> {
+class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderStateMixin {
 
   final _imageSize = 224; // Size that cropped image will be resized to
-
+  AnimationController _loadingAnimation;
+  Future<List> _detectFuture;
   GlobalKey _rectKey; // GlobalKey for detected object outline
   List<GlobalKey> _resizeKeys; // GlobalKey list for resize buttons
   DetectedData _data; // Detected data parsed from json
@@ -83,6 +85,9 @@ class _ClassifyPageState extends State<ClassifyPage> {
       prob: 0,
       detectedClass: null,
     ) :  widget.data;
+
+    // Setup Animation Value
+    final _loadingAnimation = AnimationController(vsync: this, duration: Duration(milliseconds: 1200));
 
   }
 
@@ -286,12 +291,15 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   /// Run TFLite model on cropped image
-  Future<List> _deepDetect() async {
+  void _deepDetect() async {
     if(mainModelLoaded) {
       await _loadModel();
       mainModelLoaded = false;
     }
-    return _classifyCoral(await _cropDetected());
+    Future<List> fut = _classifyCoral(await _cropDetected());
+    setState(() {
+      _detectFuture = fut;
+    });
   }
 
   /// Load Tflite Model
@@ -511,100 +519,121 @@ class _ClassifyPageState extends State<ClassifyPage> {
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Container(
+        height: _screenSize(context).height,
+        width: _screenSize(context).width,
         color: Colors.black,
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: AspectRatio(
-                aspectRatio: 10,
-                child: Stack(
-                  children: <Widget> [
-                    Align(
-                      alignment: Alignment.center,
-                      child: Image.file(_imageFile),
-                    ),
-                    Container(
-                      height: _screenSize(context).height,
-                      width: _screenSize(context).width,
-                      child: GestureDetector(
-                        onTapUp: (details) {
-                          final RenderBox box = _rectKey.currentContext.findRenderObject();
-                          Offset _rectOffset = box.globalToLocal(details.globalPosition);
-                          if(box.hitTest(BoxHitTestResult(), position: _rectOffset) && !_editMode) {
-                            _showImageData();
-                          }
-                        },
-                        onPanUpdate: (details) => _determineWhichDragged(details),
-                        child: Stack( // Custom Paint Drawings
-                          fit: StackFit.expand,
-                          children: <Widget> [
-                            CustomPaint(
-                              key: _rectKey,
-                              painter: DetectDraw(
-                                Map.from(_editingRect),
-                                _screenSize(context),
-                                _determinePaint()
-                              ),
-                            ),
-                            CustomPaint( // Top
-                              key: _resizeKeys[0],
-                              painter: ResizeDraw(
-                                  _editingRect["x"] + _editingRect["w"]/2.0,
-                                  _editingRect["y"],
-                                  _screenSize(context),
-                                  _editMode && !_shouldDrag
-                              ),
-                            ),
-                            CustomPaint( // Right
-                              key: _resizeKeys[1],
-                              painter: ResizeDraw(
-                                  _editingRect["x"] + _editingRect["w"],
-                                  _editingRect["y"] + _editingRect["h"]/2.0,
-                                  _screenSize(context),
-                                  _editMode && !_shouldDrag
-                              ),
-                            ),
-                            CustomPaint( // Bottom
-                              key: _resizeKeys[2],
-                              painter: ResizeDraw(
-                                  _editingRect["x"] + _editingRect["w"]/2.0,
-                                  _editingRect["y"] + _editingRect["h"],
-                                  _screenSize(context),
-                                  _editMode && !_shouldDrag
-                              ),
-                            ),
-                            CustomPaint( // Left
-                              key: _resizeKeys[3],
-                              painter: ResizeDraw(
-                                  _editingRect["x"],
-                                  _editingRect["y"] + _editingRect["h"]/2.0,
-                                  _screenSize(context),
-                                  _editMode && !_shouldDrag
-                              ),
-                            ),
-                            CustomPaint( // Detected Object Info
-                              painter: InfoDraw(
-                                Map.from(_editingRect),
-                                _screenSize(context),
-                                _data?.detectedClass,
-                                _data?.prob,
-                                _showData
-                              ),
-                            ),
-                          ],
+        child: AspectRatio(
+          aspectRatio: 10,
+          child: Stack(
+            children: <Widget> [
+              Align(
+                alignment: Alignment.center,
+                child: Image.file(_imageFile),
+              ),
+              Container(
+                height: _screenSize(context).height,
+                width: _screenSize(context).width,
+                child: GestureDetector(
+                  onTapUp: (details) {
+                    final RenderBox box = _rectKey.currentContext.findRenderObject();
+                    Offset _rectOffset = box.globalToLocal(details.globalPosition);
+                    if(box.hitTest(BoxHitTestResult(), position: _rectOffset) && !_editMode) {
+                      _showImageData();
+                    }
+                  },
+                  onPanUpdate: (details) => _determineWhichDragged(details),
+                  child: Stack( // Custom Paint Drawings
+                    fit: StackFit.expand,
+                    children: <Widget> [
+                      CustomPaint(
+                        key: _rectKey,
+                        painter: DetectDraw(
+                          Map.from(_editingRect),
+                          _screenSize(context),
+                          _determinePaint()
                         ),
                       ),
-                    ),
-                  ],
+                      CustomPaint( // Top
+                        key: _resizeKeys[0],
+                        painter: ResizeDraw(
+                            _editingRect["x"] + _editingRect["w"]/2.0,
+                            _editingRect["y"],
+                            _screenSize(context),
+                            _editMode && !_shouldDrag
+                        ),
+                      ),
+                      CustomPaint( // Right
+                        key: _resizeKeys[1],
+                        painter: ResizeDraw(
+                            _editingRect["x"] + _editingRect["w"],
+                            _editingRect["y"] + _editingRect["h"]/2.0,
+                            _screenSize(context),
+                            _editMode && !_shouldDrag
+                        ),
+                      ),
+                      CustomPaint( // Bottom
+                        key: _resizeKeys[2],
+                        painter: ResizeDraw(
+                            _editingRect["x"] + _editingRect["w"]/2.0,
+                            _editingRect["y"] + _editingRect["h"],
+                            _screenSize(context),
+                            _editMode && !_shouldDrag
+                        ),
+                      ),
+                      CustomPaint( // Left
+                        key: _resizeKeys[3],
+                        painter: ResizeDraw(
+                            _editingRect["x"],
+                            _editingRect["y"] + _editingRect["h"]/2.0,
+                            _screenSize(context),
+                            _editMode && !_shouldDrag
+                        ),
+                      ),
+                      CustomPaint( // Detected Object Info
+                        painter: InfoDraw(
+                          Map.from(_editingRect),
+                          _screenSize(context),
+                          _data?.detectedClass,
+                          _data?.prob,
+                          _showData
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
       floatingActionButton: SafeArea(
         minimum: MediaQuery.of(context).padding,
-        child: _editMode ? _editModeButtons() : _classifyButtons(),
+        child: Stack(
+          children: <Widget> [
+            _editMode ? _editModeButtons() : _classifyButtons(),
+            FutureBuilder<List>(
+              future: _detectFuture,
+              builder: (context, snapshot) {
+                if(snapshot.connectionState == ConnectionState.none || snapshot.connectionState == ConnectionState.done) {
+                  return SizedBox.shrink();
+                } else {
+                  return Container(
+                    color: Colors.black.withOpacity(0.5),
+                    height: _screenSize(context).height,
+                    width: _screenSize(context).width,
+                    child: Center(
+                      child: SpinKitCubeGrid(
+                        color: Colors.white,
+                        size: 50.0,
+                        controller: _loadingAnimation,
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
