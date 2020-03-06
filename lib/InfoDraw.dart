@@ -99,11 +99,11 @@ class InfoDraw extends CustomPainter {
 
     if(xy[1] - h/2.0 - boxHeight/2.0 > 0.0) { //Top
       xy[1] -= h/2.0 + boxHeight/2.0;
-    } else if(xy[0] + w/2.0 + boxWidth < screenSize.width) { // Right
+    } else if(xy[0] + w + boxWidth < screenSize.width) { // Right
       xy[0] += w/2.0 + boxWidth/2.0;
-    } else if(xy[1] + h/2.0 + boxHeight < screenSize.height){
+    } else if(xy[1] + h/2.0 + boxHeight*2.0 < screenSize.height) { // Bottom
       xy[1] += h/2.0 + boxHeight/2.0;
-    } else if(xy[0] - w/2.0 - boxWidth/2.0 > 0.0) {
+    } else if(xy[0] - w/2.0 - boxWidth/2.0 > 0.0) { // Left
       xy[0] -= w/2.0 + boxWidth/2.0;
     }
 
