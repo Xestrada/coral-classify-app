@@ -8,6 +8,7 @@ import 'package:camera/camera.dart';
 import 'package:tflite/tflite.dart';
 import './DetectDraw.dart';
 import './ClassifyPage.dart';
+import './globals.dart';
 
 class CameraPage extends StatefulWidget {
   final String title;
@@ -83,11 +84,14 @@ class _CameraPageState extends State<CameraPage> {
 
   /// Load Tflite Model
   void _loadModel() async {
-    await Tflite.loadModel(
-      model: "assets/ssd_mobilenet.tflite",
-      labels: "assets/ssd_mobilenet.txt",
-      numThreads: 4,
-    );
+    if(!mainModelLoaded) {
+      await Tflite.loadModel(
+        model: "assets/ssd_mobilenet.tflite",
+        labels: "assets/ssd_mobilenet.txt",
+        numThreads: 4,
+      );
+      mainModelLoaded = true;
+    }
   }
 
   /// Process [image] through TensorFlow model
@@ -140,6 +144,10 @@ class _CameraPageState extends State<CameraPage> {
 
       // Go to ClassifyPage only if no CameraError
       await _goToClassifyPage(context, _saveDir);
+
+      // Reload model if classify model was loaded
+      _loadModel();
+
       //Restart ImageStream
       await _enableImageStream();
 
@@ -151,23 +159,6 @@ class _CameraPageState extends State<CameraPage> {
 
   }
 
-  /// Go to ClassifyPage while opening image at [path]
-  Future<void> _goToClassifyPage(BuildContext context, String path) async {
-    await Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => ClassifyPage(
-              path: path,
-              data: DetectedData(
-                  rect: _savedRect,
-                  detectedClass: _savedCoralType,
-                  prob: _savedProb
-              ),
-            )
-        )
-    );
-  }
-
   /// Go to the Gallery Page
   void _goToGallery(BuildContext context) async {
     //Stop ImageStream
@@ -177,6 +168,10 @@ class _CameraPageState extends State<CameraPage> {
         context,
         '/gallery'
     );
+
+    // Reload model if classify model was loaded
+    _loadModel();
+
     //Restart ImageStreaming
     await _enableImageStream();
   }
@@ -199,6 +194,23 @@ class _CameraPageState extends State<CameraPage> {
       await _camControl.stopImageStream();
       _isImageStreaming = false;
     }
+  }
+
+  /// Go to ClassifyPage while opening image at [path]
+  Future<void> _goToClassifyPage(BuildContext context, String path) async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ClassifyPage(
+              path: path,
+              data: DetectedData(
+                  rect: _savedRect,
+                  detectedClass: _savedCoralType,
+                  prob: _savedProb
+              ),
+            )
+        )
+    );
   }
 
   /// Find Corals in [image]

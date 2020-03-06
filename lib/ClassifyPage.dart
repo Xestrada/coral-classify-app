@@ -11,6 +11,7 @@ import './DetectDraw.dart';
 import './DetectedData.dart';
 import './ResizeDraw.dart';
 import './InfoDraw.dart';
+import './globals.dart';
 
 class ClassifyPage extends StatefulWidget {
 
@@ -28,6 +29,8 @@ class ClassifyPage extends StatefulWidget {
 
 class _ClassifyPageState extends State<ClassifyPage> {
 
+  final _imageSize = 224;
+
   GlobalKey _rectKey;
   List<GlobalKey> _resizeKeys;
   DetectedData _data;
@@ -38,7 +41,6 @@ class _ClassifyPageState extends State<ClassifyPage> {
   bool _showData;
   bool _editMode;
   bool _shouldDrag;
-  bool _loadedModel;
 
   @override
   void initState() {
@@ -50,7 +52,6 @@ class _ClassifyPageState extends State<ClassifyPage> {
     _editMode = false;
     _showData = false;
     _shouldDrag = true;
-    _loadedModel = false;
     _imageFile = File(this.widget.path);
     _jsonFile = File(
         "${this.widget.path.substring(0, this.widget.path.length - 4)}.json"
@@ -279,27 +280,25 @@ class _ClassifyPageState extends State<ClassifyPage> {
     );
     tmp = img.copyRotate(tmp, 90);
     return img.copyResize(tmp,
-        width: 300,
-        height: 300
+        width: _imageSize,
+        height: _imageSize
     );
   }
 
   /// Run TFLite model on cropped image
-  void _deepDetect() async {
-    if(!_loadedModel) {
-      //await _loadModel();
-      _loadedModel = false;
+  Future<List> _deepDetect() async {
+    if(mainModelLoaded) {
+      await _loadModel();
+      mainModelLoaded = false;
     }
-    List ans = await _classifyCoral(await _cropDetected());
-    print(ans);
-
+    return _classifyCoral(await _cropDetected());
   }
 
   /// Load Tflite Model
   Future<void> _loadModel() {
     return Tflite.loadModel(
-      model: "assets/ssd_mobilenet.tflite",
-      labels: "assets/ssd_mobilenet.txt",
+      model: "assets/coral_classification.tflite",
+      labels: "assets/coral_classification.txt",
       numThreads: 4,
     );
   }
@@ -310,36 +309,26 @@ class _ClassifyPageState extends State<ClassifyPage> {
     List resultList;
 
     try {
-      resultList = await Tflite.detectObjectOnBinary(
-        binary: _imageToByteListUint8(image, 300),
-        model: "SSDMobileNet",
+      resultList = await Tflite.runModelOnBinary(
+        binary: _imageToByteListFloat32(image, _imageSize, 127.5, 127.5),
+        numResults: 12,
         threshold: 0.2,
       );
     } catch (e) {
       print("TFLite model error: $e");
     }
 
-    List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
-    Map biggestRect; // Biggest Rect of detected Object
-    double maxProb = 0.0;
     String objectType; // Detected Object name
     double prob; // Confidence in Class
 
     if(resultList != null) {
-      for (var item in resultList) {
-        if (possibleCoral.contains(item["detectedClass"])) {
-          // Choose Object with greatest confidence
-          if (item["confidenceInClass"] > maxProb) {
-            biggestRect = item["rect"];
-            objectType = item["detectedClass"];
-            maxProb = prob = item["confidenceInClass"];
-          }
-        }
-      }
+      objectType = resultList[0]["label"];
+      prob = resultList[0]["confidence"];
     }
 
-    // Return Map of rectangle, type of detected Object, and confidence
-    return [biggestRect, objectType, prob];
+    // Return Detected Object and Confidence
+    print(resultList);
+    return [objectType, prob];
 
   }
 
@@ -360,7 +349,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
   }
 
   // Convert [image] to Uint8List of Float32
-  Float32List _imageToByteListFloat32(img.Image image, int inputSize, double mean, double std) {
+  Uint8List _imageToByteListFloat32(img.Image image, int inputSize, double mean, double std) {
     var convertedBytes = Float32List(1 * inputSize * inputSize * 3);
     var buffer = Float32List.view(convertedBytes.buffer);
     int pixelIndex = 0;
@@ -372,7 +361,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
         buffer[pixelIndex++] = (img.getBlue(pixel) - mean) / std;
       }
     }
-    return convertedBytes.buffer.asFloat32List();
+    return convertedBytes.buffer.asUint8List();
   }
 
   /// Get the Screen Size of the Device using [context]
