@@ -12,7 +12,7 @@ class InfoDraw extends CustomPainter {
   double boxHeight;
 
   InfoDraw(this.rect, this.screenSize, this.detectedClass, this.prob, this.showData) {
-    boxWidth = 180;
+    boxWidth = 250;
     boxHeight = 120;
   }
 
@@ -24,10 +24,6 @@ class InfoDraw extends CustomPainter {
       Paint paint = Paint();
       paint.color = Colors.white;
       paint.style = PaintingStyle.fill;
-
-      // Draw Rectangle holding Info
-      Offset o = _determineAlignment();
-      Rect drawRect = o & Size(boxWidth, boxHeight);
 
       // Draw Text
       TextPainter textPaint = TextPainter();
@@ -68,6 +64,12 @@ class InfoDraw extends CustomPainter {
       textPaint.textAlign = TextAlign.left;
       textPaint.textDirection = TextDirection.ltr;
       textPaint.layout();
+
+      // Draw Rectangle holding Info
+      boxWidth = textPaint.width * 1.3;
+      boxHeight = textPaint.height * 1.2;
+      Offset o = _determineAlignment();
+      Rect drawRect = o & Size(boxWidth, boxHeight);
 
       if(showData) {
         canvas.drawRect(drawRect, paint);
