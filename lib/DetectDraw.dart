@@ -28,6 +28,7 @@ class DetectDraw extends CustomPainter {
 
   @override
   bool hitTest(Offset offset) {
+    if(rect == null) return false;
     Path path = Path();
     // Add rectangle
     double x, y, w, h;

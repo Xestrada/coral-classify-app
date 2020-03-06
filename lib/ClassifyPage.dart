@@ -29,18 +29,18 @@ class ClassifyPage extends StatefulWidget {
 
 class _ClassifyPageState extends State<ClassifyPage> {
 
-  final _imageSize = 224;
+  final _imageSize = 224; // Size that cropped image will be resized to
 
-  GlobalKey _rectKey;
-  List<GlobalKey> _resizeKeys;
-  DetectedData _data;
-  Map _editingRect;
-  Paint _unselectedPaint, _selectedPaint, _editingPaint;
-  File _imageFile, _jsonFile;
-  double _buttonSize;
-  bool _showData;
-  bool _editMode;
-  bool _shouldDrag;
+  GlobalKey _rectKey; // GlobalKey for detected object outline
+  List<GlobalKey> _resizeKeys; // GlobalKey list for resize buttons
+  DetectedData _data; // Detected data parsed from json
+  Map _editingRect; // Map representing the editable outline of the detected object
+  Paint _unselectedPaint, _selectedPaint, _editingPaint; // Paints
+  File _imageFile, _jsonFile; // Files for json and png
+  double _buttonSize; // Size of buttons
+  bool _showData; // If detected object info should be shown
+  bool _editMode; // Flag for edit mode
+  bool _shouldDrag; // Flag for dragging option
 
   @override
   void initState() {
@@ -299,7 +299,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     return Tflite.loadModel(
       model: "assets/coral_classification.tflite",
       labels: "assets/coral_classification.txt",
-      numThreads: 4,
+      numThreads: 2,
     );
   }
 
@@ -348,7 +348,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     return convertedBytes.buffer.asUint8List();
   }
 
-  // Convert [image] to Uint8List of Float32
+  /// Convert [image] to Uint8List of Float32
   Uint8List _imageToByteListFloat32(img.Image image, int inputSize, double mean, double std) {
     var convertedBytes = Float32List(1 * inputSize * inputSize * 3);
     var buffer = Float32List.view(convertedBytes.buffer);
@@ -369,7 +369,7 @@ class _ClassifyPageState extends State<ClassifyPage> {
     return MediaQuery.of(context).size;
   }
 
-  ///Determine what paint to use
+  /// Determine what paint to use
   Paint _determinePaint() {
     if(_editMode) {
       return _editingPaint;
