@@ -49,3 +49,5 @@ flutter:
   assets:
    - assets/ssd_mobilenet.tflite
    - assets/ssd_mobilenet.txt
+   - assets/coral_classification.txt
+   - assets/coral_classification.tflite
