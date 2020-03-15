@@ -86,8 +86,8 @@ class _CameraPageState extends State<CameraPage> {
   void _loadModel() async {
     if(!mainModelLoaded) {
       await Tflite.loadModel(
-        model: "assets/ssd_mobilenet.tflite",
-        labels: "assets/ssd_mobilenet.txt",
+        model: "assets/coral_detection.tflite",
+        labels: "assets/coral_detection.txt",
         numThreads: 4,
       );
       mainModelLoaded = true;
@@ -215,7 +215,7 @@ class _CameraPageState extends State<CameraPage> {
 
   /// Find Corals in [image]
   Future<List> _findCorals(CameraImage image) async {
-
+    //TODO - Fix crashing for object detection
     List resultList = await Tflite.detectObjectOnFrame(
       bytesList: image.planes.map((plane) {
         return plane.bytes;
@@ -229,7 +229,6 @@ class _CameraPageState extends State<CameraPage> {
 
     );
 
-    List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
     Map biggestRect; // Biggest Rect of detected Object
     double maxProb = 0.0;
     String objectType; // Detected Object name
@@ -237,13 +236,11 @@ class _CameraPageState extends State<CameraPage> {
 
     if(resultList != null) {
       for (var item in resultList) {
-        if (possibleCoral.contains(item["detectedClass"])) {
-          // Choose Object with greatest confidence
-          if (item["confidenceInClass"] > maxProb) {
-            biggestRect = item["rect"];
-            objectType = item["detectedClass"];
-            maxProb = prob = item["confidenceInClass"];
-          }
+        // Choose Object with greatest confidence
+        if (item["confidenceInClass"] > maxProb) {
+          biggestRect = item["rect"];
+          objectType = item["detectedClass"];
+          maxProb = prob = item["confidenceInClass"];
         }
       }
     }
