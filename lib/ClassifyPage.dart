@@ -134,6 +134,7 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
     ShareExtend.share(this.widget.path, "Coral Image");
   }
 
+  // TODO - Deleting an image does not delete corresponding json
   /// Delete the Image and any detected Data
   void _deleteImage(BuildContext context) async {
 
