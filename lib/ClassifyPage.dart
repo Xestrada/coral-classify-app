@@ -330,7 +330,7 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
     return Tflite.loadModel(
       model: "assets/coral_classification.tflite",
       labels: "assets/coral_classification.txt",
-      numThreads: 2,
+      numThreads: isIOS ? 2 : 4,
     );
   }
 

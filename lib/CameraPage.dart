@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:tflite/tflite.dart';
+import 'dart:io' show Platform;
 import './DetectDraw.dart';
 import './ClassifyPage.dart';
 import './globals.dart';
@@ -60,7 +61,10 @@ class _CameraPageState extends State<CameraPage> {
     _customPaint.style = PaintingStyle.stroke;
     _customPaint.strokeWidth = 2.0;
 
-    //Load Tflite Model
+    // Find platform
+    isIOS = Platform.isIOS;
+
+    //Load TFLite Model
     _loadModel();
 
     // Setup Camera Control
@@ -82,13 +86,13 @@ class _CameraPageState extends State<CameraPage> {
     print("disposed");
   }
 
-  /// Load Tflite Model
+  /// Load TFLite Model
   void _loadModel() async {
     if(!mainModelLoaded) {
       await Tflite.loadModel(
         model: "assets/coral_detection.tflite",
         labels: "assets/coral_detection.txt",
-        numThreads: 4,
+        numThreads: isIOS ? 2 : 4,
       );
       mainModelLoaded = true;
     }
@@ -216,6 +220,9 @@ class _CameraPageState extends State<CameraPage> {
   /// Find Corals in [image]
   Future<List> _findCorals(CameraImage image) async {
     //TODO - Fix crashing for object detection
+    print(image.planes.map((plane) {
+      return plane.bytes;
+    }).toList());
     List resultList = await Tflite.detectObjectOnFrame(
       bytesList: image.planes.map((plane) {
         return plane.bytes;
