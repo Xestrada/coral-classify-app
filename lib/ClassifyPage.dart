@@ -290,16 +290,12 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
   void _parseDetectedCoral(List results) {
     String coralType = "";
     double confidence = 0.0;
-    int numClasses = results.length;
 
-    for(var map in results) {
-      coralType += "${map["label"]}, ";
-      confidence += map["confidence"];
-    }
+    // Get most confident class
+    coralType = results[0]["label"];
+    confidence = results[0]["confidence"];
 
-    coralType = coralType.substring(0, coralType.length - 2);
     coralType = coralType.replaceAll("_", " ");
-    confidence = confidence/numClasses;
 
     setState(() {
       _data.detectedClass = coralType;

@@ -219,10 +219,6 @@ class _CameraPageState extends State<CameraPage> {
 
   /// Find Corals in [image]
   Future<List> _findCorals(CameraImage image) async {
-    //TODO - Fix crashing for object detection
-    print(image.planes.map((plane) {
-      return plane.bytes;
-    }).toList());
     List resultList = await Tflite.detectObjectOnFrame(
       bytesList: image.planes.map((plane) {
         return plane.bytes;
