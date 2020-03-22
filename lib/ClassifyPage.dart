@@ -125,7 +125,8 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
     Map<String, dynamic> _storableData = (_data == null)
         ? DetectedData(rect: null, detectedClass: null, prob: null).toJson() :
     _data.toJson();
-    _jsonFile.writeAsString(jsonEncode(_storableData));
+    await _jsonFile.writeAsString(jsonEncode(_storableData));
+    _jsonFile = null;
     Navigator.pop(context);
   }
 
@@ -134,13 +135,14 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
     ShareExtend.share(this.widget.path, "Coral Image");
   }
 
-  // TODO - Deleting an image does not delete corresponding json
   /// Delete the Image and any detected Data
-  void _deleteImage(BuildContext context) async {
+  void _deleteImage(BuildContext context) {
 
     try {
-      await _imageFile.delete(recursive: false);
-      await _jsonFile.delete(recursive: false);
+      _imageFile.deleteSync();
+      if(_jsonFile.existsSync()) {
+        _jsonFile.deleteSync();
+      }
     } catch(e) {
       print(e);
     }
@@ -349,22 +351,6 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
     // Return Detected Object and Confidence
     return resultList;
 
-  }
-
-  /// Convert [image] to Uint8List
-  Uint8List _imageToByteListUint8(img.Image image, int inputSize) {
-    var convertedBytes = Uint8List(1 * inputSize * inputSize * 3);
-    var buffer = Uint8List.view(convertedBytes.buffer);
-    int pixelIndex = 0;
-    for (var i = 0; i < image.height; i++) {
-      for (var j = 0; j < image.width; j++) {
-        var pixel = image.getPixel(j, i);
-        buffer[pixelIndex++] = img.getRed(pixel);
-        buffer[pixelIndex++] = img.getGreen(pixel);
-        buffer[pixelIndex++] = img.getBlue(pixel);
-      }
-    }
-    return convertedBytes.buffer.asUint8List();
   }
 
   /// Convert [image] to Uint8List of Float32

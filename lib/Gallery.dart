@@ -164,8 +164,12 @@ class _GalleryState extends State<Gallery> {
                     return e.path.contains(".jpg") || e.path.contains(".png");
               });
 
+              // Remove previously loaded data
+              detectedData.clear();
+
               // Get and read all JSON files
               images.forEach( (FileSystemEntity image) {
+                print(image.path);
                 detectedData.add(_getJSONDataOf(image.path));
               });
 
