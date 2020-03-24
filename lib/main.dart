@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import './Gallery.dart';
 import './CameraPage.dart';
+import './Settings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,7 @@ class CoralClassify extends StatelessWidget {
           cameras: cameras,
         ),
         '/gallery': (context) => Gallery(),
+        '/settings': (context) => Settings()
       }
     );
   }

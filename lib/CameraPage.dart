@@ -167,6 +167,23 @@ class _CameraPageState extends State<CameraPage> {
 
   }
 
+  /// Go to the settings page
+  void _goToSettings(BuildContext context) async {
+    //Stop ImageStream
+    await _disableImageStream();
+    // Go to Settings and wait until popped
+    await Navigator.pushNamed(
+        context,
+        '/settings'
+    );
+
+    // Reload model if classify model was loaded
+    _loadModel();
+
+    //Restart ImageStreaming
+    await _enableImageStream();
+  }
+
   /// Go to the Gallery Page
   void _goToGallery(BuildContext context) async {
     //Stop ImageStream
@@ -312,7 +329,7 @@ class _CameraPageState extends State<CameraPage> {
                       } else {
                         return Center(
                           child: Text(
-                            "Failed ot Initialize Cameras",
+                            "Failed to Initialize Cameras",
                           ),
                         );
                       }
@@ -323,45 +340,58 @@ class _CameraPageState extends State<CameraPage> {
             ],
           ),
         ),
-        floatingActionButton: FractionallySizedBox(
-          widthFactor: 0.85,
-          heightFactor: 0.1,
-          alignment: Alignment.bottomCenter,
-          child: Stack(
-            children: <Widget> [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: MaterialButton(
-                  color: Colors.blue,
-                  shape: CircleBorder(),
-                  height: _buttonSize,
-                  child: Icon(_shouldImageStream ? MdiIcons.eye : MdiIcons.eyeOff),
-                  onPressed: () => _toggleImageStream(),
+        floatingActionButton: SafeArea(
+          minimum: MediaQuery.of(context).padding,
+          child:FractionallySizedBox(
+            widthFactor: 1,
+            heightFactor: 0.96,
+            alignment: Alignment.bottomCenter,
+            child: Stack(
+              children: <Widget> [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: MaterialButton(
+                    color: Colors.black,
+                    shape: CircleBorder(),
+                    height: _buttonSize,
+                    child: Icon(Icons.settings),
+                    onPressed: () => _goToSettings(context),
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: MaterialButton(
-                  color: Colors.blue,
-                  shape: CircleBorder(),
-                  child: Icon(Icons.camera_alt),
-                  height: _buttonSize,
-                  onPressed: () => _takePicture(context),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: MaterialButton(
+                    color: Colors.blue,
+                    shape: CircleBorder(),
+                    height: _buttonSize,
+                    child: Icon(_shouldImageStream ? MdiIcons.eye : MdiIcons.eyeOff),
+                    onPressed: () => _toggleImageStream(),
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: MaterialButton(
-                  color: Colors.blue,
-                  shape: CircleBorder(),
-                  child: Icon(Icons.photo_album),
-                  height: _buttonSize,
-                  onPressed: () => _goToGallery(context),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: MaterialButton(
+                    color: Colors.blue,
+                    shape: CircleBorder(),
+                    child: Icon(Icons.camera_alt),
+                    height: _buttonSize,
+                    onPressed: () => _takePicture(context),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        )
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: MaterialButton(
+                    color: Colors.blue,
+                    shape: CircleBorder(),
+                    child: Icon(Icons.photo_album),
+                    height: _buttonSize,
+                    onPressed: () => _goToGallery(context),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ),
     );
   }
 }

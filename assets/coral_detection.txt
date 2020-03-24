@@ -1,8 +1,8 @@
-Zoanthid
-Duncan Coral
-Torch Coral
-Acropora
-Montipora
 Leather Coral
-Candy Cane Coral
 Green Star Polyp
+Montipora
+Candy Cane Coral
+Torch Coral
+Zoanthid
+Acropora
+Duncan Coral

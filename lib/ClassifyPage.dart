@@ -353,7 +353,7 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
 
   }
 
-  /// Convert [image] to Uint8List of Float32
+  /// Convert [image] to UInt8List of Float32
   Uint8List _imageToByteListFloat32(img.Image image, int inputSize, double mean, double std) {
     var convertedBytes = Float32List(1 * inputSize * inputSize * 3);
     var buffer = Float32List.view(convertedBytes.buffer);
