@@ -169,7 +169,6 @@ class _GalleryState extends State<Gallery> {
 
               // Get and read all JSON files
               images.forEach( (FileSystemEntity image) {
-                print(image.path);
                 detectedData.add(_getJSONDataOf(image.path));
               });
 

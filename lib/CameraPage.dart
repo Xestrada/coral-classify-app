@@ -83,7 +83,6 @@ class _CameraPageState extends State<CameraPage> {
     _camControl?.dispose();
     await Tflite.close();
     super.dispose();
-    print("disposed");
   }
 
   /// Load TFLite Model
@@ -127,9 +126,14 @@ class _CameraPageState extends State<CameraPage> {
     final String dir = (await getApplicationDocumentsDirectory()).path;
 
     // Save currently detected Corals
-    _savedRect = _currentRect;
+    _savedRect = Map.from(_currentRect);
     _savedCoralType = _currentCoralType;
     _savedProb = _currentProb;
+
+    // Clear currently detected coral
+    _currentRect = null;
+    _currentCoralType = null;
+    _currentProb = null;
 
     // Stop Image Stream.
     await _disableImageStream();
