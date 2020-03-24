@@ -324,7 +324,7 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
     );
   }
 
-  /// Load Tflite Model
+  /// Load TFLite Model
   Future<void> _loadModel() {
     return Tflite.loadModel(
       model: "assets/coral_classification.tflite",
@@ -386,133 +386,92 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
   }
 
   /// Create buttons for edit mode
-  Widget _editModeButtons() {
-    return Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          FractionallySizedBox(
-            widthFactor: 0.85,
-            heightFactor: 0.1,
-            alignment: Alignment.topCenter,
-            child: Stack(
-              children: <Widget> [
-                Align(
-                  alignment: Alignment.center,
-                  child: IconButton(
-                    iconSize: _buttonSize,
-                    icon: Icon(_shouldDrag ? MdiIcons.resize : MdiIcons.dragVariant),
-                    onPressed: () => _toggleShouldDrag(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          FractionallySizedBox(
-            widthFactor: 0.85,
-            heightFactor: 0.1,
-            alignment: Alignment.bottomCenter,
-            child: Stack(
-              children: <Widget> [
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: MaterialButton(
-                    height: _buttonSize,
-                    child: Icon(Icons.check),
-                    shape: new CircleBorder(),
-                    color: Colors.blue,
-                    onPressed: () => _saveEditedRect(true),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: MaterialButton(
-                    height: _buttonSize,
-                    color: Colors.red,
-                    child: Icon(Icons.close),
-                    shape: new CircleBorder(),
-                    onPressed: () => _saveEditedRect(false),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ]
-    );
+  List<Widget> _editModeButtons() {
+    return [
+      Align(
+        alignment: Alignment.topCenter,
+        child: IconButton(
+          iconSize: _buttonSize,
+          icon: Icon(_shouldDrag ? MdiIcons.resize : MdiIcons.dragVariant),
+          onPressed: () => _toggleShouldDrag(),
+        ),
+      ),
+      Align(
+        alignment: Alignment.bottomRight,
+        child: MaterialButton(
+          height: _buttonSize,
+          child: Icon(Icons.check),
+          shape: new CircleBorder(),
+          color: Colors.blue,
+          onPressed: () => _saveEditedRect(true),
+        ),
+      ),
+      Align(
+        alignment: Alignment.bottomLeft,
+        child: MaterialButton(
+          height: _buttonSize,
+          color: Colors.red,
+          child: Icon(Icons.close),
+          shape: new CircleBorder(),
+          onPressed: () => _saveEditedRect(false),
+        ),
+      ),
+    ];
   }
 
   /// Create the buttons for the main Classify Page
-  Widget _classifyButtons() {
-    return Stack(
-        fit: StackFit.expand,
-        children: <Widget>[
-          FractionallySizedBox(
-            widthFactor: 0.85,
-            heightFactor: 0.1,
-            alignment: Alignment.topCenter,
-            child: Stack(
-              children: <Widget> [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    icon: Icon(MdiIcons.imageEditOutline),
-                    onPressed: () => _toggleEditMode(),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    icon: Icon(Icons.share),
-                    onPressed: () => _shareImage(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          FractionallySizedBox(
-            widthFactor: 0.85,
-            heightFactor: 0.1,
-            alignment: Alignment.bottomCenter,
-            child: Stack(
-              children: <Widget> [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: MaterialButton(
-                    height: _buttonSize,
-                    color: Colors.red,
-                    child: Icon(Icons.delete_forever),
-                    shape: new CircleBorder(),
-                    onPressed: () => _showDeleteDialog(context),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: MaterialButton(
-                    height: _buttonSize,
-                    color: _showData ? Colors.blue : Colors.grey,
-                    child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
-                    shape: new CircleBorder(),
-                    onPressed: () => _showData ? _deepDetect() : {},
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: MaterialButton(
-                    height: _buttonSize,
-                    color: Colors.blue,
-                    child: Icon(Icons.check),
-                    shape: new CircleBorder(),
-                    onPressed: () => _saveImage(context),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ]
-    );
+  List<Widget> _classifyButtons() {
+    return [
+      Align(
+        alignment: Alignment.topLeft,
+        child: IconButton(
+          icon: Icon(MdiIcons.imageEditOutline),
+          onPressed: () => _toggleEditMode(),
+        ),
+      ),
+      Align(
+        alignment: Alignment.topRight,
+        child: IconButton(
+          icon: Icon(Icons.share),
+          onPressed: () => _shareImage(),
+        ),
+      ),
+      Align(
+        alignment: Alignment.bottomLeft,
+        child: MaterialButton(
+          height: _buttonSize,
+          color: Colors.red,
+          child: Icon(Icons.delete_forever),
+          shape: new CircleBorder(),
+          onPressed: () => _showDeleteDialog(context),
+        ),
+      ),
+      Align(
+        alignment: Alignment.bottomCenter,
+        child: MaterialButton(
+          height: _buttonSize,
+          color: _showData ? Colors.blue : Colors.grey,
+          child: Icon(_showData ? MdiIcons.eye : MdiIcons.eyeOff),
+          shape: new CircleBorder(),
+          onPressed: () => _showData ? _deepDetect() : {},
+        ),
+      ),
+      Align(
+        alignment: Alignment.bottomRight,
+        child: MaterialButton(
+          height: _buttonSize,
+          color: Colors.blue,
+          child: Icon(Icons.check),
+          shape: new CircleBorder(),
+          onPressed: () => _saveImage(context),
+        ),
+      ),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> buttons = _editMode ?  _editModeButtons() : _classifyButtons();
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: Container(
@@ -605,34 +564,38 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
       ),
       floatingActionButton: SafeArea(
         minimum: MediaQuery.of(context).padding,
-        child: Stack(
-          children: <Widget> [
-            _editMode ? _editModeButtons() : _classifyButtons(),
-            FutureBuilder<List>(
-              future: _detectFuture,
-              builder: (context, snapshot) {
-                if(snapshot.connectionState == ConnectionState.none || snapshot.connectionState == ConnectionState.done) {
-                  if(snapshot?.data != null) {
-                    SchedulerBinding.instance.addPostFrameCallback((_) => _parseDetectedCoral(snapshot.data));
-                  }
-                  return SizedBox.shrink();
-                } else {
-                  return Container(
-                    color: Colors.black.withOpacity(0.5),
-                    height: _screenSize(context).height,
-                    width: _screenSize(context).width,
-                    child: Center(
-                      child: SpinKitCubeGrid(
-                        color: Colors.white,
-                        size: 50.0,
-                        controller: _loadingAnimation,
+        child: FractionallySizedBox(
+          widthFactor: 1,
+          heightFactor: 0.96,
+          child: Stack(
+            children:  <Widget> [
+              ...buttons,
+              FutureBuilder<List>(
+                future: _detectFuture,
+                builder: (context, snapshot) {
+                  if(snapshot.connectionState == ConnectionState.none || snapshot.connectionState == ConnectionState.done) {
+                    if(snapshot?.data != null) {
+                      SchedulerBinding.instance.addPostFrameCallback((_) => _parseDetectedCoral(snapshot.data));
+                    }
+                    return SizedBox.shrink();
+                  } else {
+                    return Container(
+                      color: Colors.black.withOpacity(0.5),
+                      height: _screenSize(context).height,
+                      width: _screenSize(context).width,
+                      child: Center(
+                        child: SpinKitCubeGrid(
+                          color: Colors.white,
+                          size: 50.0,
+                          controller: _loadingAnimation,
+                        ),
                       ),
-                    ),
-                  );
-                }
-              },
-            ),
-          ],
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
