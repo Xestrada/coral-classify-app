@@ -51,7 +51,7 @@ class _CameraPageState extends State<CameraPage> {
     super.initState();
     _buttonSize = 55.0;
     _isDetecting = false;
-    _shouldImageStream = true;
+    _shouldImageStream = startUpDetection ?? true;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
@@ -70,10 +70,12 @@ class _CameraPageState extends State<CameraPage> {
     // Setup Camera Control
     _camControl = CameraController(widget.cameras.first, ResolutionPreset.high, enableAudio: false);
     _camFuture = _camControl.initialize().then((_) async {
-      await _camControl.startImageStream((CameraImage image) =>
-          _processCameraImage(image)
-      );
-      _isImageStreaming = true;
+      if(_shouldImageStream) {
+        await _camControl.startImageStream((CameraImage image) =>
+            _processCameraImage(image)
+        );
+        _isImageStreaming = true;
+      }
     });
 
   }

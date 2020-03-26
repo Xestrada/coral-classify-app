@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:reef_ai/globals.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Settings extends StatefulWidget {
 
@@ -12,17 +14,26 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
 
-  bool _startUpDetection;
+  bool _settingsChanged;
 
   @override
   void initState() {
     super.initState();
-    _startUpDetection = true;
+    _settingsChanged = false;
   }
 
   void _updateStartUpDetection(bool value) {
     setState(() {
-      _startUpDetection = value;
+      startUpDetection = value;
+      _settingsChanged = true;
+    });
+  }
+
+  void _saveSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('startUpDetection', startUpDetection);
+    setState(() {
+      _settingsChanged = false;
     });
   }
 
@@ -31,6 +42,13 @@ class _SettingsState extends State<Settings> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Settings"),
+        actions: <Widget>[
+          IconButton(
+            color: _settingsChanged ? Colors.white : Colors.grey,
+            icon: Icon(Icons.check),
+            onPressed: () => _settingsChanged ? _saveSettings() : {},
+          ),
+        ],
       ),
       body: Column(
         children: <Widget> [
@@ -66,7 +84,7 @@ class _SettingsState extends State<Settings> {
                         Radio(
                           activeColor: Colors.red,
                           value: false,
-                          groupValue: _startUpDetection,
+                          groupValue: startUpDetection ?? false,
                           onChanged: (value) => _updateStartUpDetection(value),
                         ),
                       ],
@@ -79,7 +97,7 @@ class _SettingsState extends State<Settings> {
                       children: <Widget>[
                         Radio(
                           value: true,
-                          groupValue: _startUpDetection,
+                          groupValue: startUpDetection ?? true,
                           onChanged: (value) => _updateStartUpDetection(value),
                         ),
                       ],
