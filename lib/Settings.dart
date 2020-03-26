@@ -32,46 +32,68 @@ class _SettingsState extends State<Settings> {
       appBar: AppBar(
         title: Text("Settings"),
       ),
-      body: ListView.builder(
-          itemBuilder: (context, position) {
-            return Card(
+      body: Column(
+        children: <Widget> [
+          Container(
+            height: 80,
+            child: Card(
+              margin: EdgeInsets.all(0),
+              shape: BeveledRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.zero),
+              ),
               child: Row(
                 children: <Widget>[
                   Expanded(
                     flex: 4,
-                    child: Text("Enable Detection on Start-up: "),
-                  ),
-                  Expanded(
-                    flex: 1,
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Radio(
-                          value: false,
-                          groupValue: _startUpDetection,
-                          onChanged: (value) => _updateStartUpDetection(value),
+                        Text(
+                          "Enable Detection on Start-up: ",
+                          style: TextStyle(
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold
+                          ),
                         ),
-                        Text("Disabled"),
                       ],
                     ),
                   ),
                   Expanded(
                     flex: 1,
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Radio(
+                          activeColor: Colors.red,
+                          value: false,
+                          groupValue: _startUpDetection,
+                          onChanged: (value) => _updateStartUpDetection(value),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Radio(
                           value: true,
                           groupValue: _startUpDetection,
                           onChanged: (value) => _updateStartUpDetection(value),
                         ),
-                        Text("Enabled"),
                       ],
                     ),
                   ),
                 ],
               ),
-            );
-          },
-        itemCount: 1,
+            ),
+          ),
+          Divider(
+            height: 2.0,
+            color: Colors.grey,
+          )
+        ]
       ),
     );
   }
