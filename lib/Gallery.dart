@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:reef_ai/GalleryCard.dart';
+import 'package:reef_ai/ClassifyPage.dart';
+import 'package:reef_ai/DetectedData.dart';
 import 'dart:convert';
 import 'dart:io';
-import './GalleryCard.dart';
-import './ClassifyPage.dart';
-import './DetectedData.dart';
 
 class Gallery extends StatefulWidget {
 

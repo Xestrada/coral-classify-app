@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import './Gallery.dart';
-import './CameraPage.dart';
-import './Settings.dart';
+import 'package:reef_ai/Gallery.dart';
+import 'package:reef_ai/CameraPage.dart';
+import 'package:reef_ai/Settings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final List<CameraDescription> cameras = await availableCameras();
-  runApp(CoralClassify(cameras: cameras));
+  runApp(ReefAI(cameras: cameras));
 }
 
-class CoralClassify extends StatelessWidget {
+class ReefAI extends StatelessWidget {
 
   final List<CameraDescription> cameras;
-  CoralClassify({this.cameras});
+  ReefAI({this.cameras});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Coral Classify',
+      title: 'Reef AI',
       theme: ThemeData.dark(),
       initialRoute: '/',
       routes: {

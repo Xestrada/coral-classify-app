@@ -1,4 +1,3 @@
-import 'package:coral_classify/DetectedData.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -7,9 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:tflite/tflite.dart';
 import 'dart:io' show Platform;
-import './DetectDraw.dart';
-import './ClassifyPage.dart';
-import './globals.dart';
+import 'package:reef_ai/DetectedData.dart';
+import 'package:reef_ai/DetectDraw.dart';
+import 'package:reef_ai/ClassifyPage.dart';
+import 'package:reef_ai/globals.dart';
 
 class CameraPage extends StatefulWidget {
   final String title;

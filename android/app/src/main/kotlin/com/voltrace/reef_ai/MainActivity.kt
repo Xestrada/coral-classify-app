@@ -1,4 +1,4 @@
-package com.voltrace.coral_classify
+package com.voltrace.reef_ai
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

@@ -1,5 +1,5 @@
-name: coral_classify
-description: Application to Classify Aquarium Corals
+name: reef_ai
+description: Application to Detect and Classify Aquarium Corals
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43

@@ -5,15 +5,15 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:share_extend/share_extend.dart';
 import 'package:tflite/tflite.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:reef_ai/DetectDraw.dart';
+import 'package:reef_ai/DetectedData.dart';
+import 'package:reef_ai/ResizeDraw.dart';
+import 'package:reef_ai/InfoDraw.dart';
+import 'package:reef_ai/globals.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'dart:convert';
 import 'dart:typed_data';
-import './DetectDraw.dart';
-import './DetectedData.dart';
-import './ResizeDraw.dart';
-import './InfoDraw.dart';
-import './globals.dart';
 
 class ClassifyPage extends StatefulWidget {
 
