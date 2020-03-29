@@ -75,6 +75,8 @@ class _CameraPageState extends State<CameraPage> {
             _processCameraImage(image)
         );
         _isImageStreaming = true;
+      } else {
+        _isImageStreaming = false;
       }
     });
 
