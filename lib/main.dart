@@ -5,12 +5,17 @@ import 'package:reef_ai/CameraPage.dart';
 import 'package:reef_ai/Settings.dart';
 import 'package:reef_ai/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final List<CameraDescription> cameras = await availableCameras();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   startUpDetection = prefs.getBool('startUpDetection');
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.camera,
+    Permission.storage
+  ].request();
   runApp(ReefAI(cameras: cameras));
 }
 
