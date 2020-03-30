@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:reef_ai/GalleryCard.dart';
-import 'package:reef_ai/ClassifyPage.dart';
-import 'package:reef_ai/DetectedData.dart';
+import 'package:reef_ai/Gallery/GalleryCard.dart';
+import 'package:reef_ai/Classify/ClassifyPage.dart';
+import 'package:reef_ai/Data/DetectedData.dart';
 import 'dart:convert';
 import 'dart:io';
 

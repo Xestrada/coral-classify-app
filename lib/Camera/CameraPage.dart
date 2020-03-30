@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:tflite/tflite.dart';
 import 'dart:io' show Platform;
-import 'package:reef_ai/DetectedData.dart';
-import 'package:reef_ai/DetectDraw.dart';
-import 'package:reef_ai/ClassifyPage.dart';
-import 'package:reef_ai/globals.dart';
+import 'package:reef_ai/Data/DetectedData.dart';
+import 'package:reef_ai/Draw/DetectDraw.dart';
+import 'package:reef_ai/Classify/ClassifyPage.dart';
+import 'package:reef_ai/Data/globals.dart';
 
 class CameraPage extends StatefulWidget {
   final String title;

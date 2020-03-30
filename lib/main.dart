@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:reef_ai/Gallery.dart';
-import 'package:reef_ai/CameraPage.dart';
-import 'package:reef_ai/Settings.dart';
-import 'package:reef_ai/globals.dart';
+import 'package:reef_ai/Gallery/Gallery.dart';
+import 'package:reef_ai/Camera/CameraPage.dart';
+import 'package:reef_ai/Settings/Settings.dart';
+import 'package:reef_ai/Data/globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 
