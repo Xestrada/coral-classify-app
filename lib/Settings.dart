@@ -67,7 +67,7 @@ class _SettingsState extends State<Settings> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Text(
-                          "Enable Detection on Start-up: ",
+                          "Enable detection on start: ",
                           style: TextStyle(
                               fontSize: 18.0,
                               fontWeight: FontWeight.bold
