@@ -130,7 +130,7 @@ class _CameraPageState extends State<CameraPage> {
     final String dir = (await getApplicationDocumentsDirectory()).path;
 
     // Save currently detected Corals
-    _savedRect = Map.from(_currentRect);
+    _savedRect = _currentRect != null ? Map.from(_currentRect) : null;
     _savedCoralType = _currentCoralType;
     _savedProb = _currentProb;
 
