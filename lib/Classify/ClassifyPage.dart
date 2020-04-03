@@ -31,7 +31,7 @@ class ClassifyPage extends StatefulWidget {
 
 class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderStateMixin {
 
-  final _imageSize = 224; // Size that cropped image will be resized to
+  final _imageSize = 600; // Size that cropped image will be resized to
   AnimationController _loadingAnimation;
   Future<List> _detectFuture;
   GlobalKey _rectKey; // GlobalKey for detected object outline

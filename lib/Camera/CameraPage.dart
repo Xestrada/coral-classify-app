@@ -90,7 +90,7 @@ class _CameraPageState extends State<CameraPage> {
   }
 
   /// Load TFLite Model
-  void _loadModel() async {
+  Future<void> _loadModel() async {
     if(!mainModelLoaded) {
       await Tflite.loadModel(
         model: "assets/coral_detection.tflite",
@@ -158,7 +158,7 @@ class _CameraPageState extends State<CameraPage> {
       await _goToClassifyPage(context, _saveDir);
 
       // Reload model if classify model was loaded
-      _loadModel();
+      await _loadModel();
 
       //Restart ImageStream
       await _enableImageStream();
@@ -182,7 +182,7 @@ class _CameraPageState extends State<CameraPage> {
     );
 
     // Reload model if classify model was loaded
-    _loadModel();
+    await _loadModel();
 
     //Restart ImageStreaming
     await _enableImageStream();
@@ -199,7 +199,7 @@ class _CameraPageState extends State<CameraPage> {
     );
 
     // Reload model if classify model was loaded
-    _loadModel();
+    await _loadModel();
 
     //Restart ImageStreaming
     await _enableImageStream();
