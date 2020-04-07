@@ -562,41 +562,47 @@ class _ClassifyPageState extends State<ClassifyPage> with SingleTickerProviderSt
           ),
         ),
       ),
-      floatingActionButton: SafeArea(
-        minimum: MediaQuery.of(context).padding,
-        child: FractionallySizedBox(
-          widthFactor: 1,
-          heightFactor: 0.96,
-          child: Stack(
-            children:  <Widget> [
-              ...buttons,
-              FutureBuilder<List>(
-                future: _detectFuture,
-                builder: (context, snapshot) {
-                  if(snapshot.connectionState == ConnectionState.none || snapshot.connectionState == ConnectionState.done) {
-                    if(snapshot?.data != null) {
-                      SchedulerBinding.instance.addPostFrameCallback((_) => _parseDetectedCoral(snapshot.data));
-                    }
-                    return SizedBox.shrink();
-                  } else {
-                    return Container(
-                      color: Colors.black.withOpacity(0.5),
-                      height: _screenSize(context).height,
-                      width: _screenSize(context).width,
-                      child: Center(
-                        child: SpinKitCubeGrid(
-                          color: Colors.white,
-                          size: 50.0,
-                          controller: _loadingAnimation,
-                        ),
-                      ),
-                    );
-                  }
-                },
-              ),
-            ],
+      floatingActionButton: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          SafeArea(
+            minimum: MediaQuery.of(context).padding,
+                child: FractionallySizedBox(
+                  widthFactor: 1,
+                  heightFactor: 0.96,
+                  child: Stack(
+                    children:  <Widget> [
+                      ...buttons,
+                    ],
+                  ),
+                ),
           ),
-        ),
+          FutureBuilder<List>(
+            future: _detectFuture,
+            builder: (context, snapshot) {
+              if(snapshot.connectionState == ConnectionState.none || snapshot.connectionState == ConnectionState.done) {
+                if(snapshot?.data != null) {
+                  SchedulerBinding.instance.addPostFrameCallback((_) => _parseDetectedCoral(snapshot.data));
+                }
+                return SizedBox.shrink();
+              } else {
+                return Container(
+                  padding: EdgeInsets.all(20),
+                  color: Colors.black.withOpacity(0.5),
+                  height: _screenSize(context).height,
+                  width: _screenSize(context).width,
+                  child: Center(
+                    child: SpinKitCubeGrid(
+                      color: Colors.white,
+                      size: 50.0,
+                      controller: _loadingAnimation,
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+        ],
       ),
     );
   }
