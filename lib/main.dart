@@ -1,90 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
+import 'package:reef_ai/Gallery/Gallery.dart';
+import 'package:reef_ai/Camera/CameraPage.dart';
+import 'package:reef_ai/Settings/Settings.dart';
+import 'package:reef_ai/Data/globals.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() => runApp(CoralClassify());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final List<CameraDescription> cameras = await availableCameras();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  startUpDetection = prefs.getBool('startUpDetection');
+  Map<Permission, PermissionStatus> statuses = await [
+    Permission.camera,
+    Permission.storage
+  ].request();
+  runApp(ReefAI(cameras: cameras));
+}
 
-class CoralClassify extends StatelessWidget {
+class ReefAI extends StatelessWidget {
+
+  final List<CameraDescription> cameras;
+  ReefAI({this.cameras});
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Coral Classify',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CameraPage(title: 'Camera Page'),
-    );
-  }
-}
-
-class CameraPage extends StatefulWidget {
-  CameraPage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _CameraPageState createState() => _CameraPageState();
-}
-
-class _CameraPageState extends State<CameraPage> {
-
-  CameraController camControl;
-  bool camInit = false;
-  String topText = "";
-
-  void initializeCamera() async {
-    topText = "Camera is Initializing";
-    List<CameraDescription> cameras = await availableCameras();
-    camControl = CameraController(cameras[0], ResolutionPreset.medium);
-    camControl.initialize().then( (onValue) {
-      camInit = true;
-      topText = "Camera is Initialized";
-      setState(() {});
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      body: Container(
-        color: Colors.black,
-        child: Column(
-          children: <Widget>[
-            Text(
-              topText,
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-            camInit ? Expanded(
-              child: OverflowBox(
-                maxWidth: double.infinity,
-                child: AspectRatio(
-                  aspectRatio: camControl.value.aspectRatio,
-                  child: CameraPreview(camControl)
-                )
-              )
-            ) : Container()
-          ],
+      title: 'Reef AI',
+      theme: ThemeData.dark(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => CameraPage(
+          title: 'Camera Page',
+          cameras: cameras,
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-      ),
+        '/gallery': (context) => Gallery(),
+        '/settings': (context) => Settings()
+      }
     );
   }
-
 }
