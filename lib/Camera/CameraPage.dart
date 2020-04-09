@@ -1,4 +1,3 @@
-import 'package:coral_classify/DetectedData.dart';
 import 'package:flutter/services.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:path_provider/path_provider.dart';
@@ -6,8 +5,11 @@ import 'package:path/path.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:tflite/tflite.dart';
-import './DetectDraw.dart';
-import './ClassifyPage.dart';
+import 'dart:io' show Platform;
+import 'package:reef_ai/Data/DetectedData.dart';
+import 'package:reef_ai/Draw/DetectDraw.dart';
+import 'package:reef_ai/Classify/ClassifyPage.dart';
+import 'package:reef_ai/Data/globals.dart';
 
 class CameraPage extends StatefulWidget {
   final String title;
@@ -49,7 +51,7 @@ class _CameraPageState extends State<CameraPage> {
     super.initState();
     _buttonSize = 55.0;
     _isDetecting = false;
-    _shouldImageStream = true;
+    _shouldImageStream = startUpDetection ?? true;
     SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
@@ -59,16 +61,23 @@ class _CameraPageState extends State<CameraPage> {
     _customPaint.style = PaintingStyle.stroke;
     _customPaint.strokeWidth = 2.0;
 
-    //Load Tflite Model
+    // Find platform
+    isIOS = Platform.isIOS;
+
+    //Load TFLite Model
     _loadModel();
 
     // Setup Camera Control
     _camControl = CameraController(widget.cameras.first, ResolutionPreset.high, enableAudio: false);
     _camFuture = _camControl.initialize().then((_) async {
-      await _camControl.startImageStream((CameraImage image) =>
-          _processCameraImage(image)
-      );
-      _isImageStreaming = true;
+      if(_shouldImageStream) {
+        await _camControl.startImageStream((CameraImage image) =>
+            _processCameraImage(image)
+        );
+        _isImageStreaming = true;
+      } else {
+        _isImageStreaming = false;
+      }
     });
 
   }
@@ -78,16 +87,18 @@ class _CameraPageState extends State<CameraPage> {
     _camControl?.dispose();
     await Tflite.close();
     super.dispose();
-    print("disposed");
   }
 
-  /// Load Tflite Model
-  void _loadModel() async {
-    await Tflite.loadModel(
-      model: "assets/ssd_mobilenet.tflite",
-      labels: "assets/ssd_mobilenet.txt",
-      numThreads: 4,
-    );
+  /// Load TFLite Model
+  Future<void> _loadModel() async {
+    if(!mainModelLoaded) {
+      await Tflite.loadModel(
+        model: "assets/coral_detection.tflite",
+        labels: "assets/coral_detection.txt",
+        numThreads: isIOS ? 2 : 4,
+      );
+      mainModelLoaded = true;
+    }
   }
 
   /// Process [image] through TensorFlow model
@@ -119,9 +130,14 @@ class _CameraPageState extends State<CameraPage> {
     final String dir = (await getApplicationDocumentsDirectory()).path;
 
     // Save currently detected Corals
-    _savedRect = _currentRect;
+    _savedRect = _currentRect != null ? Map.from(_currentRect) : null;
     _savedCoralType = _currentCoralType;
     _savedProb = _currentProb;
+
+    // Clear currently detected coral
+    _currentRect = null;
+    _currentCoralType = null;
+    _currentProb = null;
 
     // Stop Image Stream.
     await _disableImageStream();
@@ -140,6 +156,10 @@ class _CameraPageState extends State<CameraPage> {
 
       // Go to ClassifyPage only if no CameraError
       await _goToClassifyPage(context, _saveDir);
+
+      // Reload model if classify model was loaded
+      await _loadModel();
+
       //Restart ImageStream
       await _enableImageStream();
 
@@ -151,21 +171,21 @@ class _CameraPageState extends State<CameraPage> {
 
   }
 
-  /// Go to ClassifyPage while opening image at [path]
-  Future<void> _goToClassifyPage(BuildContext context, String path) async {
-    await Navigator.push(
+  /// Go to the settings page
+  void _goToSettings(BuildContext context) async {
+    //Stop ImageStream
+    await _disableImageStream();
+    // Go to Settings and wait until popped
+    await Navigator.pushNamed(
         context,
-        MaterialPageRoute(
-            builder: (context) => ClassifyPage(
-              path: path,
-              data: DetectedData(
-                  rect: _savedRect,
-                  detectedClass: _savedCoralType,
-                  prob: _savedProb
-              ),
-            )
-        )
+        '/settings'
     );
+
+    // Reload model if classify model was loaded
+    await _loadModel();
+
+    //Restart ImageStreaming
+    await _enableImageStream();
   }
 
   /// Go to the Gallery Page
@@ -177,6 +197,10 @@ class _CameraPageState extends State<CameraPage> {
         context,
         '/gallery'
     );
+
+    // Reload model if classify model was loaded
+    await _loadModel();
+
     //Restart ImageStreaming
     await _enableImageStream();
   }
@@ -201,9 +225,25 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
+  /// Go to ClassifyPage while opening image at [path]
+  Future<void> _goToClassifyPage(BuildContext context, String path) async {
+    await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ClassifyPage(
+              path: path,
+              data: DetectedData(
+                  rect: _savedRect,
+                  detectedClass: _savedCoralType,
+                  prob: _savedProb
+              ),
+            )
+        )
+    );
+  }
+
   /// Find Corals in [image]
   Future<List> _findCorals(CameraImage image) async {
-
     List resultList = await Tflite.detectObjectOnFrame(
       bytesList: image.planes.map((plane) {
         return plane.bytes;
@@ -217,7 +257,6 @@ class _CameraPageState extends State<CameraPage> {
 
     );
 
-    List<String> possibleCoral = ['dog', 'cat']; // List of possible Objects
     Map biggestRect; // Biggest Rect of detected Object
     double maxProb = 0.0;
     String objectType; // Detected Object name
@@ -225,13 +264,11 @@ class _CameraPageState extends State<CameraPage> {
 
     if(resultList != null) {
       for (var item in resultList) {
-        if (possibleCoral.contains(item["detectedClass"])) {
-          // Choose Object with greatest confidence
-          if (item["confidenceInClass"] > maxProb) {
-            biggestRect = item["rect"];
-            objectType = item["detectedClass"];
-            maxProb = prob = item["confidenceInClass"];
-          }
+        // Choose Object with greatest confidence
+        if (item["confidenceInClass"] > maxProb) {
+          biggestRect = item["rect"];
+          objectType = item["detectedClass"];
+          maxProb = prob = item["confidenceInClass"];
         }
       }
     }
@@ -296,7 +333,7 @@ class _CameraPageState extends State<CameraPage> {
                       } else {
                         return Center(
                           child: Text(
-                            "Failed ot Initialize Cameras",
+                            "Failed to Initialize Cameras",
                           ),
                         );
                       }
@@ -307,45 +344,58 @@ class _CameraPageState extends State<CameraPage> {
             ],
           ),
         ),
-        floatingActionButton: FractionallySizedBox(
-          widthFactor: 0.85,
-          heightFactor: 0.1,
-          alignment: Alignment.bottomCenter,
-          child: Stack(
-            children: <Widget> [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: MaterialButton(
-                  color: Colors.blue,
-                  shape: CircleBorder(),
-                  height: _buttonSize,
-                  child: Icon(_shouldImageStream ? MdiIcons.eye : MdiIcons.eyeOff),
-                  onPressed: () => _toggleImageStream(),
+        floatingActionButton: SafeArea(
+          minimum: MediaQuery.of(context).padding,
+          child:FractionallySizedBox(
+            widthFactor: 1,
+            heightFactor: 0.96,
+            alignment: Alignment.bottomCenter,
+            child: Stack(
+              children: <Widget> [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: MaterialButton(
+                    color: Colors.black,
+                    shape: CircleBorder(),
+                    height: _buttonSize,
+                    child: Icon(Icons.settings),
+                    onPressed: () => _goToSettings(context),
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: MaterialButton(
-                  color: Colors.blue,
-                  shape: CircleBorder(),
-                  child: Icon(Icons.camera_alt),
-                  height: _buttonSize,
-                  onPressed: () => _takePicture(context),
+                Align(
+                  alignment: Alignment.bottomLeft,
+                  child: MaterialButton(
+                    color: Colors.blue,
+                    shape: CircleBorder(),
+                    height: _buttonSize,
+                    child: Icon(_shouldImageStream ? MdiIcons.eye : MdiIcons.eyeOff),
+                    onPressed: () => _toggleImageStream(),
+                  ),
                 ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: MaterialButton(
-                  color: Colors.blue,
-                  shape: CircleBorder(),
-                  child: Icon(Icons.photo_album),
-                  height: _buttonSize,
-                  onPressed: () => _goToGallery(context),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: MaterialButton(
+                    color: Colors.blue,
+                    shape: CircleBorder(),
+                    child: Icon(Icons.camera_alt),
+                    height: _buttonSize,
+                    onPressed: () => _takePicture(context),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        )
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: MaterialButton(
+                    color: Colors.blue,
+                    shape: CircleBorder(),
+                    child: Icon(Icons.photo_album),
+                    height: _buttonSize,
+                    onPressed: () => _goToGallery(context),
+                  ),
+                ),
+              ],
+            ),
+          )
+        ),
     );
   }
 }

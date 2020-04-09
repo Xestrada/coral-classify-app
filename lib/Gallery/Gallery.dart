@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:reef_ai/Gallery/GalleryCard.dart';
+import 'package:reef_ai/Classify/ClassifyPage.dart';
+import 'package:reef_ai/Data/DetectedData.dart';
 import 'dart:convert';
 import 'dart:io';
-import './GalleryCard.dart';
-import './ClassifyPage.dart';
-import './DetectedData.dart';
 
 class Gallery extends StatefulWidget {
 
@@ -163,6 +163,9 @@ class _GalleryState extends State<Gallery> {
                   .listSync(recursive: false, followLinks: false).where((FileSystemEntity e) {
                     return e.path.contains(".jpg") || e.path.contains(".png");
               });
+
+              // Remove previously loaded data
+              detectedData.clear();
 
               // Get and read all JSON files
               images.forEach( (FileSystemEntity image) {

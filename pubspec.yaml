@@ -1,5 +1,5 @@
-name: coral_classify
-description: Application to Classify Aquarium Corals
+name: reef_ai
+description: Detect and Classify Aquarium Corals
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -11,32 +11,44 @@ description: Application to Classify Aquarium Corals
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.0+1
+version: 0.1.0+1
 
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.3.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
+  archive: ^2.0.11
+  camera: ^0.5.7+4
   cupertino_icons: ^0.1.2
-  camera: ^0.5.7+3
+  firebase_storage: ^3.1.5
+  flutter_spinkit: ^4.1.2
+  http: ^0.12.0+4
   image: ^2.1.4
   json_annotation: ^3.0.1
   material_design_icons_flutter: ^3.4.4895
   path_provider: ^1.5.1
   path: ^1.6.4
+  permission_handler: ^5.0.0+hotfix.1
   share_extend: ^1.1.1
+  shared_preferences: ^0.5.6+3
   tflite: ^1.0.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  json_serializable: ^3.2.5
   build_runner: ^1.7.4
+  flutter_native_splash: ^0.1.9
+  json_serializable: ^3.2.5
+
+flutter_native_splash:
+  image: 'assets/icon.png'
+  color: '80deea'
+  ios: false
 
 
 # For information on the generic Dart part of this file, see the
@@ -47,5 +59,9 @@ flutter:
 
   uses-material-design: true
   assets:
-   - assets/ssd_mobilenet.tflite
-   - assets/ssd_mobilenet.txt
+   - assets/coral_detection.tflite
+   - assets/coral_detection.txt
+   - assets/coral_classification.txt
+   - assets/coral_classification.tflite
+   - assets/icon.png
+
