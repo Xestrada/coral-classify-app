@@ -1,16 +1,15 @@
-# coral_classify
+# Reef AI
 
-Application to Classify Aquarium Corals
+Android Application to Detect and Classify Aquarium Corals
 
-## Getting Started
+## Software Stack
+<ul>
+    <li>Flutter/Dart - Framework used to develop the application</li>
+    <li>TensorFlow/Python - Framework used to build and train models used for object detection and classification</li>
+</ul>
 
-This project is a starting point for a Flutter application.
+## About
 
-A few resources to get you started if this is your first Flutter project:
+Reef AI is an Android app built using Flutter that uses object detection and object classification 
+models built using TensorFlow to provide real-time coral detection using the devices camera.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
