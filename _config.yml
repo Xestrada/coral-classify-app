@@ -1,1 +1,4 @@
 theme: jekyll-theme-minimal
+title: Reef AI
+description: Aquarium Coral Classification and Detection using Machine Learning
+logo: ./assets/icon.png
